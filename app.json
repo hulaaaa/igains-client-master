@@ -1,0 +1,61 @@
+{
+  "expo": {
+    "name": "igains-client",
+    "slug": "igains-client",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/system/icon.png",
+    "userInterfaceStyle": "dark",
+    "splash": {
+      "image": "./assets/images/system/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#000000"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.hulaaaa.igainsclient",
+      "infoPlist": {
+        "UIViewControllerBasedStatusBarAppearance": true
+      },
+      "runtimeVersion": "1.0.0"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/system/adaptive-icon.png",
+        "backgroundColor": "#06070A"
+      },
+      "runtimeVersion": {
+        "policy": "appVersion"
+      }
+    },
+    "web": {
+      "favicon": "./assets/images/system/favicon.png"
+    },
+    "plugins": [
+      [
+        "expo-font",
+        {
+          "fonts": [
+            "../fonts/regular.otf",
+            "../fonts/regular-italic.otf",
+            "../fonts/light.otf",
+            "../fonts/light-italic.otf",
+            "../fonts/bold.otf",
+            "../fonts/bold-italic.otf"
+          ]
+        }
+      ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "3049a2d5-f865-491f-9415-409d8680b2a7"
+      }
+    },
+    "updates": {
+      "url": "https://u.expo.dev/3049a2d5-f865-491f-9415-409d8680b2a7"
+    }
+  }
+}

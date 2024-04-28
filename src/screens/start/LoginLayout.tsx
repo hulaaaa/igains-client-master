@@ -16,6 +16,7 @@ import CloseSvg from '../../../assets/svg/CloseSvg';
 import ForgotPassword from '../../modal/ForgotPassword';
 import { useStore } from '../../services/ZustandModalPassword';
 import Toast from 'react-native-toast-message';
+
 interface IFormInput {
   email: string;
   password: string;
@@ -42,38 +43,64 @@ export default function LoginLayout() {
     },
   });
 
+  const retrieveToken = async () => {
+    try {
+      const token = await AsyncStorage.getItem('token');
+      if (token !== null) {
+        console.log(`its ok:${token}`);
+      }
+    } catch (error) {
+      console.error('Error retrieving token:', error);
+    }
+  };
   
   const onSubmit: SubmitHandler<IFormInput> = (data) => {
-    if(data) {
-      console.log(`Login profile: ${data}`);
-      Toast.show({
-        type: 'success',
-        visibilityTime: 4000,
-        text1: 'Welcome back!',
-        text2: 'Let\'s training! 🏋️'
-      });
-    } 
-    if(data.email == 'huladm@wsb'){
-      Toast.show({
-        type: 'error',
-        visibilityTime: 4000,
-        text1: '404!',
-        text2: 'This account does not exist. ⛔️'
-      });
+    const basicInfo = {
+      email: data.email,
+      password: data.password,
     }
+    fetch('http://192.168.0.214:8090/auth/signin', {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json, text/plain, */*',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(basicInfo)
+    })
+    .then(res => {
+      if (!res.ok) {
+        throw new Error('Network response was not ok');
+      }
+      return res.json(); 
+    })
+    .then(data => {
+      const token = data.token; 
+      AsyncStorage.setItem('token', token); 
+      retrieveToken(); 
+    })
+    .catch(err => console.error('There was a problem with the request:', err));
+    // if(data) {
+    //   console.log(`Login profile: ${data}`);
+    //   Toast.show({
+    //     type: 'success',
+    //     visibilityTime: 4000,
+    //     text1: 'Welcome back!',
+    //     text2: 'Let\'s training! 🏋️'
+    //   });
+    // } 
+    // if(data.email == 'huladm@wsb'){
+    //   Toast.show({
+    //     type: 'error',
+    //     visibilityTime: 4000,
+    //     text1: '404!',
+    //     text2: 'This account does not exist. ⛔️'
+    //   });
+    // }
   };
 
   return (
     <KeyboardAwareScrollView style={{ backgroundColor: '#06070A' }}>
       <View style={headerStyle.bg}>
-        <Modal
-          animationType="fade"
-          transparent={true}
-          visible={modalVisible}
-          onRequestClose={setModalVisible}
-        >
-          <ForgotPassword />
-        </Modal>
         <SafeAreaView>
           <View style={!modalVisible ? headerStyle.mainCont : headerStyle.mainCont75} >
             <View style={headerStyle.header}>
@@ -135,7 +162,8 @@ export default function LoginLayout() {
                     <View style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                       <Text style={inputsStyle.upperInputText}>Password</Text>
                       {
-                        errors.password ? <Text style={inputsStyle.errorInput}>Enter valid password</Text> : <TouchableOpacity onPress={() => { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success); setModalVisible(!modalVisible) }}><Text style={inputsStyle.forgotpass}>Forgot password?</Text></TouchableOpacity>
+                        errors.password ? <Text style={inputsStyle.errorInput}>Enter valid password</Text> : <Text style={inputsStyle.errorInput}></Text>
+                        
                       }
                     </View>
                     <View style={[inputsStyle.inputText, { borderColor: isFocused.password ? '#E0FE10' : '#262626' }]}>

@@ -16,7 +16,7 @@ import InputIconMail from '../../../assets/svg/InputIconMail';
 import InputIconPass from '../../../assets/svg/InputIconPass';
 import Toast from 'react-native-toast-message';
 interface IFormInput {
-  firstName: string;
+  userName: string;
   email: string;
   password: string;
 }
@@ -25,18 +25,18 @@ export default function RegisterLayout() {
   const navigation = useNavigation();
   const [isLocked, setIsLocked] = useState(false);
   const [isFocused, setIsFocused] = useState({
-    firstName: false,
+    userName: false,
     email: false,
     password: false,
   });
   const [isFilled, setIsFilled] = useState({
-    firstName: false,
+    userName: false,
     email: false,
     password: false,
   });
   const { control, handleSubmit, formState: { errors } } = useForm<IFormInput>({
     defaultValues: {
-      firstName: "",
+      userName: "",
       email: "",
       password: "",
     },
@@ -46,20 +46,35 @@ export default function RegisterLayout() {
     Toast.show({
       type: 'success',
       visibilityTime: 4000,
-      text1: `Welcome in our Family, ${data.firstName}!`,
+      text1: `Welcome in our Family, ${data.userName}!`,
       text2: 'Let\'s training! 🏋️'
     });
-    console.log(`Register: ${data}`);
+    const basicInfo = {
+      age: 0,
+      gender: 0,
+      height: 0,
+      weight: 0,
+      email: data.email,
+      password: data.password,
+      userName: data.userName
+    }
+    fetch('http://192.168.0.214:8090/auth/signup', {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json, text/plain, */*',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(basicInfo)
+    })
+    .then(res => console.log(JSON.stringify(res)))
+    .catch(err=> console.log(err))
   };
 
   return (
-
-
     <KeyboardAwareScrollView style={{ backgroundColor: '#06070A' }}>
       <View style={headerStyle.bg}>
         <SafeAreaView>
           <View style={headerStyle.mainCont}>
-
             <View style={headerStyle.header}>
               <View style={headerStyle.iconHeader}>
                 <Icon_Gains />
@@ -80,16 +95,16 @@ export default function RegisterLayout() {
                   <View style={{ gap: 8 }}>
                     <View style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                       <Text style={inputsStyle.upperInputText}>Your name</Text>
-                      {errors.firstName && <Text style={inputsStyle.errorInput}>This is required.</Text>}
+                      {errors.userName && <Text style={inputsStyle.errorInput}>This is required.</Text>}
                     </View>
-                    <View style={[inputsStyle.inputText, { borderColor: isFocused.firstName ? '#E0FE10' : '#262626' }]}>
+                    <View style={[inputsStyle.inputText, { borderColor: isFocused.userName ? '#E0FE10' : '#262626' }]}>
                       <TextInput
                         placeholder="Enter your name"
                         onBlur={() => {
-                          setIsFocused({ ...isFocused, firstName: false });
-                          setIsFilled({ ...isFilled, firstName: !!value });
+                          setIsFocused({ ...isFocused, userName: false });
+                          setIsFilled({ ...isFilled, userName: !!value });
                         }}
-                        onFocus={() => setIsFocused({ ...isFocused, firstName: true })}
+                        onFocus={() => setIsFocused({ ...isFocused, userName: true })}
                         placeholderTextColor={'rgba(255, 255, 255, 0.5)'}
                         onChangeText={onChange}
                         color={'#FFFFFF'}
@@ -98,12 +113,12 @@ export default function RegisterLayout() {
                           height: 50
                         }}
                         value={value}></TextInput>
-                      <InputIconName color={isFilled.firstName ? '#FFFFFF' : 'rgba(255, 255, 255, 0.5)'} />
+                      <InputIconName color={isFilled.userName ? '#FFFFFF' : 'rgba(255, 255, 255, 0.5)'} />
                     </View>
 
                   </View>
                 )}
-                name="firstName"
+                name="userName"
               />
 
               <Controller
@@ -148,7 +163,7 @@ export default function RegisterLayout() {
               <Controller
                 control={control}
                 rules={{
-                  minLength: 8,
+                  minLength: 7,
                   required: true,
                   maxLength: 40,
                 }}

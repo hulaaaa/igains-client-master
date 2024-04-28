@@ -1,5 +1,5 @@
 import { Image, RefreshControl, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useCallback } from 'react';
 import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
@@ -81,6 +81,9 @@ export default function Profile() {
       setRefreshing(false);
     }, 800);
   };
+  
+  
+  
 
   return (
     <View style={styles.container} onLayout={onLayoutRootView}>

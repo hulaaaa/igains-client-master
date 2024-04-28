@@ -1,5 +1,5 @@
 import { Dimensions, Image, RefreshControl, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import Tabs from '../../components/Tabs'
 import { useCallback } from 'react';
 import { useFonts } from 'expo-font';
@@ -55,9 +55,41 @@ export default function Profile() {
       img: <SniperIcon/>,
     },
   ]
+  const [test,useTest] = useState({
+
+  });
+  const token = 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbkBhZG1pbi5wbCIsImlhdCI6MTcxNDMyMTU3NCwiZXhwIjoxNzE0NDA3OTc0fQ.nh34VwBRXHwPzdVkL5g0VFlc-Zl6sY1qh0dg7qRVLrI';
+  const url = 'http://192.168.0.214:8090/api/users/get/admin@admin.pl';
+  // function updateDate () {
+  //   fetch(url, {
+  //     method: 'GET',
+  //     headers: {
+  //       'Authorization': `Bearer ${token}`
+  //     }
+  //   })
+  //   .then(response => {
+  //     if (!response.ok) {
+  //       throw new Error('Network response was not ok');
+  //     }
+  //     return response.json();
+  //   })
+  //   .then(data => {
+  //     useTest(data)
+  //   })
+  //   .finally(()=> {
+  //     console.log(test);
+  //   })
+  //   .catch(error => {
+  //     console.error('There was a problem with your fetch operation:', error);
+  //   });
+  // }
+  useEffect(()=>{
+    // updateDate()
+  },[])
   const onRefresh = () => {
     setRefreshing(true);
     setTimeout(() => {
+      // updateDate()
       setRefreshing(false);
     }, 800);
 };
@@ -96,14 +128,14 @@ export default function Profile() {
                 fontSize: 20,
                 color: 'white'
               }}>
-                Dmytro Hula
+                {test.userName}
               </Text>
               <Text style={{
                 fontFamily: 'Light',
                 fontSize: 12,
                 color: 'rgba(255, 255, 255, 0.5)',
               }}>
-                @huladmytro
+                {test.email}
               </Text>
             </View>
           </View>

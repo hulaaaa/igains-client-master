@@ -11,6 +11,7 @@
   "dependencies": {
     "@expo/metro-runtime": "~3.1.3",
     "@fanchenbao/react-native-scroll-indicator": "^0.2.2",
+    "@react-native-async-storage/async-storage": "1.21.0",
     "@react-native-community/masked-view": "^0.1.11",
     "@react-native-masked-view/masked-view": "0.3.0",
     "@react-navigation/bottom-tabs": "^7.0.0-alpha.8",

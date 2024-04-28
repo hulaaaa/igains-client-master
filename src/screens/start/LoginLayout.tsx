@@ -4,7 +4,7 @@ import { useNavigation } from '@react-navigation/native';
 import { StatusBar } from 'expo-status-bar';
 import Splash_GainsText from '../../../assets/svg/Splash_GainsText';
 import Icon_Gains from '../../../assets/svg/Icon_Gains';
-import { useForm, Controller, SubmitHandler } from "react-hook-form";
+import { useForm, Controller, SubmitHandler, useFormState } from "react-hook-form";
 import * as Haptics from 'expo-haptics';
 import Arrow from '../../../assets/svg/Arrow';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
@@ -23,7 +23,7 @@ interface IFormInput {
 }
 
 export default function LoginLayout() {
-  const navigation = useNavigation();
+  const navigation = useNavigation<any>();
   const modalVisible = useStore(state => state.visibleModal);
   const setModalVisible = useStore(state => state.voidVisibleModal);
 
@@ -42,23 +42,13 @@ export default function LoginLayout() {
       password: "",
     },
   });
-
-  const retrieveToken = async () => {
-    try {
-      const token = await AsyncStorage.getItem('token');
-      if (token !== null) {
-        console.log(`its ok:${token}`);
-      }
-    } catch (error) {
-      console.error('Error retrieving token:', error);
-    }
-  };
   
   const onSubmit: SubmitHandler<IFormInput> = (data) => {
     const basicInfo = {
       email: data.email,
       password: data.password,
     }
+
     fetch('http://192.168.0.214:8090/auth/signin', {
       method: 'POST',
       headers: {
@@ -76,27 +66,15 @@ export default function LoginLayout() {
     .then(data => {
       const token = data.token; 
       AsyncStorage.setItem('token', token); 
-      retrieveToken(); 
+      if (data.email) {
+        AsyncStorage.setItem('email', data.email); 
+      }
+      navigation.navigate('Main'); // Перенаправляємо на головну сторінку
     })
     .catch(err => console.error('There was a problem with the request:', err));
-    // if(data) {
-    //   console.log(`Login profile: ${data}`);
-    //   Toast.show({
-    //     type: 'success',
-    //     visibilityTime: 4000,
-    //     text1: 'Welcome back!',
-    //     text2: 'Let\'s training! 🏋️'
-    //   });
-    // } 
-    // if(data.email == 'huladm@wsb'){
-    //   Toast.show({
-    //     type: 'error',
-    //     visibilityTime: 4000,
-    //     text1: '404!',
-    //     text2: 'This account does not exist. ⛔️'
-    //   });
-    // }
   };
+  
+   
 
   return (
     <KeyboardAwareScrollView style={{ backgroundColor: '#06070A' }}>

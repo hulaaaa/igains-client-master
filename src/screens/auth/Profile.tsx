@@ -11,11 +11,15 @@ import DotThreeIcon from '../../../assets/svg/DotThreeIcon';
 import GhostIcon from '../../../assets/svg/GhostIcon';
 import SniperIcon from '../../../assets/svg/SniperIcon';
 import ShinyStartIcon from '../../../assets/svg/ShinyStartIcon';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useNavigation } from '@react-navigation/native';
+
 
 SplashScreen.preventAutoHideAsync();
 
 
 export default function Profile() {
+  const navigation = useNavigation()
   const [refreshing, setRefreshing] = useState(false);
   const [fontsLoaded, fontError] = useFonts({
     'Regular': require('../../../assets/fonts/regular.otf'),
@@ -58,38 +62,41 @@ export default function Profile() {
   const [test,useTest] = useState({
 
   });
-  const token = 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbkBhZG1pbi5wbCIsImlhdCI6MTcxNDMyMTU3NCwiZXhwIjoxNzE0NDA3OTc0fQ.nh34VwBRXHwPzdVkL5g0VFlc-Zl6sY1qh0dg7qRVLrI';
   const url = 'http://192.168.0.214:8090/api/users/get/admin@admin.pl';
-  // function updateDate () {
-  //   fetch(url, {
-  //     method: 'GET',
-  //     headers: {
-  //       'Authorization': `Bearer ${token}`
-  //     }
-  //   })
-  //   .then(response => {
-  //     if (!response.ok) {
-  //       throw new Error('Network response was not ok');
-  //     }
-  //     return response.json();
-  //   })
-  //   .then(data => {
-  //     useTest(data)
-  //   })
-  //   .finally(()=> {
-  //     console.log(test);
-  //   })
-  //   .catch(error => {
-  //     console.error('There was a problem with your fetch operation:', error);
-  //   });
-  // }
+  async function updateDate () {
+    const token = await AsyncStorage.getItem('token')
+    const email = await AsyncStorage.getItem('email')
+    const url = `http://192.168.0.214:8090/api/users/get/${email}`;
+
+    fetch(url, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      return response.json();
+    })
+    .then(data => {
+      useTest(data)
+    })
+    .finally(()=> {
+      console.log(test);
+    })
+    .catch(error => {
+      console.error('There was a problem with your fetch operation:', error);
+    });
+  }
   useEffect(()=>{
-    // updateDate()
+    updateDate()
   },[])
   const onRefresh = () => {
     setRefreshing(true);
     setTimeout(() => {
-      // updateDate()
+      updateDate()
       setRefreshing(false);
     }, 800);
 };
@@ -290,7 +297,10 @@ export default function Profile() {
               flexDirection: 'column',
               alignItems: 'center',
             }}>
-              <TouchableOpacity style={{
+              <TouchableOpacity  onPress={async () => {
+                await AsyncStorage.removeItem('token');
+                navigation.navigate('Login'); 
+              }} style={{
                 width: '100%',
                 borderBottomColor: '#17181B',
                 borderBottomWidth: 1,
@@ -303,35 +313,7 @@ export default function Profile() {
                   color: 'rgba(255,255,255,0.7)',
                   fontSize: 16
                 }}>
-                  Edit profile
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={{
-                width: '100%',
-                borderBottomColor: '#17181B',
-                borderBottomWidth: 1,
-                padding: 13,
-              }}>
-                <Text style={{
-                  fontFamily: 'Regular',
-                  color: 'rgba(255,255,255,0.7)',
-                  fontSize: 16
-                }}>
-                  Edit information your body
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={{
-                width: '100%',
-                borderBottomColor: '#17181B',
-                borderBottomWidth: 1,
-                padding: 13,
-              }}>
-                <Text style={{
-                  fontFamily: 'Regular',
-                  color: 'rgba(255,255,255,0.7)',
-                  fontSize: 16
-                }}>
-                  Edit size of your dick
+                  Exit from profile
                 </Text>
               </TouchableOpacity>
             </View>

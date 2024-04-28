@@ -16,7 +16,7 @@ import CloseSvg from '../../../assets/svg/CloseSvg';
 import ForgotPassword from '../../modal/ForgotPassword';
 import { useStore } from '../../services/ZustandModalPassword';
 import Toast from 'react-native-toast-message';
-
+import AsyncStorage from '@react-native-async-storage/async-storage';
 interface IFormInput {
   email: string;
   password: string;

@@ -6,6 +6,7 @@ import Planer from "../screens/auth/Planer"
 import SelectWork from "../screens/auth/SelectWork"
 import Workout from "../screens/auth/Workout"
 import Favorite from "../screens/auth/Favorite"
+import ChangesInfo from "../screens/auth/ChangesInfo"
 
 const Stack = createNativeStackNavigator()
 function MainRouterStack({handleLogout}) {
@@ -17,6 +18,7 @@ function MainRouterStack({handleLogout}) {
       <Stack.Screen options={{ animation: 'fade',  gestureEnabled: false }} name="Workout" component={Workout} />
       <Stack.Screen options={{ animation: 'fade', gestureEnabled: false}} name="Stat" component={Stat} />
       <Stack.Screen options={{ animation: 'fade', gestureEnabled: false }} name="Planer" component={Planer} />
+      <Stack.Screen options={{ animation: 'fade', gestureEnabled: false }} initialParams={{ handleLogout: handleLogout }} name="ChangesInfo" component={ChangesInfo} />
       <Stack.Screen options={{ animation: 'fade', gestureEnabled: false }} initialParams={{ handleLogout: handleLogout }} name="Profile" component={Profile} />
     </Stack.Navigator>
   )

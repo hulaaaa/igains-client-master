@@ -48,7 +48,7 @@ export default function App() {
 
   const checkAuthStatus = async () => {
     const token = await AsyncStorage.getItem('token');
-    setIsAuth(false?token==null:true); 
+    setIsAuth(token !== null);
     SplashScreen.hideAsync();
   };
 
@@ -58,7 +58,8 @@ export default function App() {
 
   const handleLogout = () => {
     setIsAuth(false);
-    AsyncStorage.removeItem('token'); // Clear token from AsyncStorage
+    AsyncStorage.removeItem('email'); 
+    AsyncStorage.removeItem('token'); 
   };
 
   return (

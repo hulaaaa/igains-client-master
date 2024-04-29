@@ -25,9 +25,7 @@ interface IFormInput {
 export default function LoginLayout({route}) {
   const { handleLogin } = route.params;
 
-  const navigation = useNavigation<any>();
-
-  const [isAuth, setIsAuth] = useState(false);
+  const navigation = useNavigation();
   const modalVisible = useStore(state => state.visibleModal);
   const setModalVisible = useStore(state => state.voidVisibleModal);
 
@@ -46,13 +44,27 @@ export default function LoginLayout({route}) {
       password: "",
     },
   });
+
+  const retrieveToken = async () => {
+    try {
+      const token = await AsyncStorage.getItem('token');
+      if (token !== null) {
+        console.log(`its ok:${token}`);
+      }
+    } catch (error) {
+      console.error('Error retrieving token:', error);
+    }
+  };
   
   const onSubmit: SubmitHandler<IFormInput> = (data) => {
+    Haptics.ImpactFeedbackStyle.Heavy
     const basicInfo = {
       email: data.email,
       password: data.password,
-    };
-  
+    }
+
+    AsyncStorage.setItem('email',data.email); 
+    
     fetch('http://192.168.0.214:8090/auth/signin', {
       method: 'POST',
       headers: {
@@ -63,27 +75,35 @@ export default function LoginLayout({route}) {
     })
     .then(res => {
       if (!res.ok) {
+        Toast.show({
+          type: 'error',
+          visibilityTime: 4000,
+          text1: '404!',
+          text2: 'This account does not exist. ⛔️'
+        });
+        AsyncStorage.removeItem('email'); 
         throw new Error('Network response was not ok');
+           
       }
       return res.json(); 
     })
     .then(data => {
       const token = data.token; 
-      AsyncStorage.setItem('token', token)
-        .then(() => {
-          setIsAuth(true); // Set isAuth to true after successful login
-          if (data.email) {
-            AsyncStorage.setItem('email', data.email); // Store email in AsyncStorage
-          }
-          navigation.navigate('Main'); // Navigate to the main screen
-        })
-        .catch(err => console.error('Error setting token in AsyncStorage:', err));
+      AsyncStorage.setItem('token', token); 
+      retrieveToken(); 
+      Toast.show({
+        type: 'success',
+        visibilityTime: 4000,
+        text1: 'Welcome back!',
+        text2: 'Let\'s training! 🏋️'
+      });
+      handleLogin()
     })
-    .catch(err => console.error('There was a problem with the request:', err));
+    .catch(err => {    
+      AsyncStorage.removeItem('email'); 
+      console.error('There was a problem with the request:', err)
+    });
   };
-  
-  
-  
    
 
   return (
@@ -213,7 +233,10 @@ export default function LoginLayout({route}) {
 
             <View>
               <TouchableOpacity
-                onPress={handleLogin}>
+                onPress={() => {
+                  Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+                  handleSubmit(onSubmit)();
+                }}>
                 <View style={{
                   width: Dimensions.get('window').width - 80,
                   display: 'flex',

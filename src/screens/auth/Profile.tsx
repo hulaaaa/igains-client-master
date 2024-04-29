@@ -64,7 +64,6 @@ export default function Profile({route}) {
   const [test,useTest] = useState({
 
   });
-  const url = 'http://192.168.0.214:8090/api/users/get/admin@admin.pl';
   async function updateDate () {
     const token = await AsyncStorage.getItem('token')
     const email = await AsyncStorage.getItem('email')
@@ -84,26 +83,20 @@ export default function Profile({route}) {
     })
     .then(data => {
       useTest(data)
+      console.log(test);
+      
     })
     .finally(()=> {
       console.log(test);
     })
     .catch(error => {      
       console.log(token);
-      
       console.error('There was a problem with your fetch operation:', error);
     });
   }
   useEffect(() => {
-    const getEmail = async () => {
-      const email = await AsyncStorage.getItem('email');
-      // Now you have the email, you can use it in your fetch request or wherever needed
-    };
-    getEmail();
+    updateDate();
   }, []);
-  
-  
-  
   
   const onRefresh = () => {
     setRefreshing(true);
@@ -169,7 +162,7 @@ export default function Profile({route}) {
                     fontSize: 18,
                     color: 'white'
                   }}>
-                    55
+                    {test.weight}
                   </Text>
                   <Text style={{
                     fontFamily: 'Light',
@@ -197,7 +190,7 @@ export default function Profile({route}) {
                     fontSize: 18,
                     color: 'white'
                   }}>
-                    183
+                     {test.height}
                   </Text>
                   <Text style={{
                     fontFamily: 'Light',
@@ -225,14 +218,14 @@ export default function Profile({route}) {
                     fontSize: 18,
                     color: 'white'
                   }}>
-                    18
+                    {test.age}
                   </Text>
                   <Text style={{
                     fontFamily: 'Light',
                     fontSize: 18,
                     color: 'white'
                   }}>
-                    y.o
+                    y.o.
                   </Text>
                 </View>
                 <Text style={{
@@ -309,7 +302,7 @@ export default function Profile({route}) {
               flexDirection: 'column',
               alignItems: 'center',
             }}>
-              <TouchableOpacity onPress={handleLogout} style={{
+              <TouchableOpacity onPress={()=>{navigation.navigate('ChangesInfo')}} style={{
                 width: '100%',
                 borderBottomColor: '#17181B',
                 borderBottomWidth: 1,
@@ -322,7 +315,23 @@ export default function Profile({route}) {
                   color: 'rgba(255,255,255,0.7)',
                   fontSize: 16
                 }}>
-                  Exit from profile
+                  Edit information your body
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={handleLogout} style={{
+                width: '100%',
+                borderBottomColor: '#17181B',
+                borderBottomWidth: 1,
+                padding: 13,
+                borderTopColor: '#17181B',
+                borderTopWidth: 1
+              }}>
+                <Text style={{
+                  fontFamily: 'Regular',
+                  color: '#E03326',
+                  fontSize: 16
+                }}>
+                  Logout from profile
                 </Text>
               </TouchableOpacity>
             </View>

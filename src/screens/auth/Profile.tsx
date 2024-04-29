@@ -18,8 +18,10 @@ import { useNavigation } from '@react-navigation/native';
 SplashScreen.preventAutoHideAsync();
 
 
-export default function Profile() {
+export default function Profile({route}) {
   const navigation = useNavigation()
+  const { handleLogout } = route.params;
+
   const [refreshing, setRefreshing] = useState(false);
   const [fontsLoaded, fontError] = useFonts({
     'Regular': require('../../../assets/fonts/regular.otf'),
@@ -86,13 +88,23 @@ export default function Profile() {
     .finally(()=> {
       console.log(test);
     })
-    .catch(error => {
+    .catch(error => {      
+      console.log(token);
+      
       console.error('There was a problem with your fetch operation:', error);
     });
   }
-  useEffect(()=>{
-    updateDate()
-  },[])
+  useEffect(() => {
+    const getEmail = async () => {
+      const email = await AsyncStorage.getItem('email');
+      // Now you have the email, you can use it in your fetch request or wherever needed
+    };
+    getEmail();
+  }, []);
+  
+  
+  
+  
   const onRefresh = () => {
     setRefreshing(true);
     setTimeout(() => {
@@ -297,10 +309,7 @@ export default function Profile() {
               flexDirection: 'column',
               alignItems: 'center',
             }}>
-              <TouchableOpacity  onPress={async () => {
-                await AsyncStorage.removeItem('token');
-                navigation.navigate('Login'); 
-              }} style={{
+              <TouchableOpacity onPress={handleLogout} style={{
                 width: '100%',
                 borderBottomColor: '#17181B',
                 borderBottomWidth: 1,

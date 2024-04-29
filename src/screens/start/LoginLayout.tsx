@@ -22,8 +22,12 @@ interface IFormInput {
   password: string;
 }
 
-export default function LoginLayout() {
+export default function LoginLayout({route}) {
+  const { handleLogin } = route.params;
+
   const navigation = useNavigation<any>();
+
+  const [isAuth, setIsAuth] = useState(false);
   const modalVisible = useStore(state => state.visibleModal);
   const setModalVisible = useStore(state => state.voidVisibleModal);
 
@@ -47,8 +51,8 @@ export default function LoginLayout() {
     const basicInfo = {
       email: data.email,
       password: data.password,
-    }
-
+    };
+  
     fetch('http://192.168.0.214:8090/auth/signin', {
       method: 'POST',
       headers: {
@@ -65,14 +69,20 @@ export default function LoginLayout() {
     })
     .then(data => {
       const token = data.token; 
-      AsyncStorage.setItem('token', token); 
-      if (data.email) {
-        AsyncStorage.setItem('email', data.email); 
-      }
-      navigation.navigate('Main'); // Перенаправляємо на головну сторінку
+      AsyncStorage.setItem('token', token)
+        .then(() => {
+          setIsAuth(true); // Set isAuth to true after successful login
+          if (data.email) {
+            AsyncStorage.setItem('email', data.email); // Store email in AsyncStorage
+          }
+          navigation.navigate('Main'); // Navigate to the main screen
+        })
+        .catch(err => console.error('Error setting token in AsyncStorage:', err));
     })
     .catch(err => console.error('There was a problem with the request:', err));
   };
+  
+  
   
    
 
@@ -203,10 +213,7 @@ export default function LoginLayout() {
 
             <View>
               <TouchableOpacity
-                onPress={() => {
-                  Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-                  handleSubmit(onSubmit)();
-                }}>
+                onPress={handleLogin}>
                 <View style={{
                   width: Dimensions.get('window').width - 80,
                   display: 'flex',

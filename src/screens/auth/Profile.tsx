@@ -13,6 +13,7 @@ import SniperIcon from '../../../assets/svg/SniperIcon';
 import ShinyStartIcon from '../../../assets/svg/ShinyStartIcon';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
+import { Circle, Path, Svg } from 'react-native-svg';
 
 
 SplashScreen.preventAutoHideAsync();
@@ -41,7 +42,6 @@ export default function Profile({route}) {
   if (!fontsLoaded && !fontError) {
     return null;
   }
-  const urlAvatar = 'https://firebasestorage.googleapis.com/v0/b/i-gains.appspot.com/o/AvatarUser%2FScreenshot%202024-02-27%20at%2010.46.06.png?alt=media&token=79034def-3676-43a9-a734-820b58040afc'
   const progress = 0.27;
 
   const awards_user = [
@@ -126,7 +126,13 @@ export default function Profile({route}) {
           <View style={styles.divtasks}>
             {/* IMAGE AVATAR */}
             <View style={styles.divImage}>
-              <Image style={styles.imageAvatar} source={{uri: urlAvatar }}/>
+              <Svg xmlns="http://www.w3.org/2000/svg" fill="none">
+                <Circle cx={42.5} cy={42.5} r={42.15} stroke="#fff" strokeWidth={0.7} />
+                <Path
+                  fill="#E0FE10"
+                  d="M42.5 47.639c-12.169 0-18.5 7.194-18.5 11.305V61h37v-2.056c0-4.11-6.331-11.305-18.5-11.305ZM42.5 44.556c5.677 0 10.278-4.602 10.278-10.278S48.177 24 42.5 24c-5.676 0-10.277 4.602-10.277 10.278S36.824 44.556 42.5 44.556Z"
+                />
+              </Svg>
             </View>
             {/* NAME */}
             <View style={{
@@ -370,11 +376,6 @@ const styles = StyleSheet.create({
   divImage: {
     width: '30%',
     aspectRatio: 1/1,
-  },
-  imageAvatar : {
-    width: '100%',
-    height: '100%',
-    borderRadius: 100,
   },
   bodyDiv: {
     display: 'flex',

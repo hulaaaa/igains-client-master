@@ -1,54 +1,51 @@
-import { TimerPicker } from "react-native-timer-picker";
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { RulerPicker } from 'react-native-ruler-picker';
 import { StyleSheet, Text, View, Modal, TouchableOpacity, Dimensions, TextInput, SafeAreaView } from 'react-native'
-import React, { useState } from 'react'
+import React, { useCallback, useState } from 'react'
 import * as Haptics from 'expo-haptics';
-import { Controller, SubmitHandler, useForm } from 'react-hook-form';
-import Toast from 'react-native-toast-message';
-import CloseSvg from '../../../assets/svg/CloseSvg';
-import InputIconMail from '../../../assets/svg/InputIconMail';
-import InputIconPass from '../../../assets/svg/InputIconPass';
-import Arrow from '../../../assets/svg/Arrow';
-import { useStore } from '../../services/ZustandModalPassword';
-import { SelectList } from 'react-native-dropdown-select-list'
-import { Path, Svg } from 'react-native-svg';
-import { duration, max } from "moment";
 import { useNavigation } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-interface IFormInput {
-  email: string;
-  password: string;
-  repassword: string;
-}
-
 export default function ChangesInfo() {
-  const [startTimeD, setStartTimeD] = React.useState(0)
-  const [startTimeM, setStartTimeM] = React.useState(0)
-  const [startTimeY, setStartTimeY] = React.useState(0)
+  const navigation = useNavigation()
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [height, setHeight] = useState(0);
+  const [weight, setWeight] = useState(0);
 
-  const [height, setHeight] = React.useState(0)
-  const [weight, setWeight] = React.useState(0)
-
-  async function putchInfo(){
+  async function putchInfo() {
     const currentDate = new Date();
     const currentYear = currentDate.getFullYear();
-    const currentMonth = currentDate.getMonth() + 1; 
+    const currentMonth = currentDate.getMonth() + 1;
     const currentDay = currentDate.getDate();
-    const token = await AsyncStorage.getItem('token')
-    const email = await AsyncStorage.getItem('email')
+    const token = await AsyncStorage.getItem('token');
+    const email = await AsyncStorage.getItem('email');
     const url = `http://192.168.0.214:8090/api/users/change`;
-    let age = currentYear - startTimeY;
-    if (currentMonth < startTimeM || (currentMonth === startTimeM && currentDay < startTimeD)) {
-        age--;
+
+    const birthdayYear = selectedDate.getFullYear();
+    const birthdayMonth = selectedDate.getMonth() + 1;
+    const birthdayDay = selectedDate.getDate();
+
+    if (
+      currentYear < birthdayYear ||
+      (currentYear === birthdayYear && currentMonth < birthdayMonth) ||
+      (currentYear === birthdayYear && currentMonth === birthdayMonth && currentDay < birthdayDay)
+    ) {
+      console.error('Неправильна дата народження');
+      return;
     }
-    
+
+    let age = currentYear - birthdayYear;
+    if (currentMonth < birthdayMonth || (currentMonth === birthdayMonth && currentDay < birthdayDay)) {
+      age--;
+    }
+
     const dataBody = {
       email: email,
       age: Number(age),
       height: Number(height),
       weight: Number(weight)
     };
+
     const requestOptions = {
       method: 'PUT',
       headers: {
@@ -57,20 +54,14 @@ export default function ChangesInfo() {
       },
       body: JSON.stringify(dataBody)
     };
-    console.log(JSON.stringify(dataBody),token);
-    
+
     fetch(url, requestOptions)
       .then(response => {
-          console.log("Response:", response);
-          return response.text();
+        return response.text();
       })
-        .then(data => console.log(data))
-        .catch(err=>console.log(err))
-        .finally(()=>{navigation.navigate('Profile')})
+      .catch(err => console.log(err))
+      .finally(() => {navigation.navigate('Home')});
   }
-  const navigation = useNavigation()
-  
-  
   return (
     <View style={headerStyle.bg}>
       <SafeAreaView>
@@ -105,171 +96,28 @@ export default function ChangesInfo() {
             alignItems: 'center',
             gap: 20,
           }}>
-
             <View style={{flexDirection:'row',alignItems:'center',width: Dimensions.get('window').width - 50, justifyContent:'space-between'}}>
-              <View style={{width: "30%",gap: 8}}>
+              <View style={{width: "100%",gap: 10}}>
                 <Text style={{
                   fontFamily: 'Regular',
                   color: '#FFFFFF',
                   fontSize: 16,
                 }}>Set your birthdate</Text>
-                <View style={{
-                  alignItems: 'center',
-                  flexDirection: 'row',
-                  borderColor: '#262626',
-                  borderWidth: 1,
-                  borderRadius: 12,
-                  backgroundColor: '#06070A',
-                }}>
-                <TimerPicker
-                    padWithNItems={1}
-                    onDurationChange={(duration) => setStartTimeD(duration.minutes)}
-                    minuteLabel=""
-                    hideSeconds
-                    hideHours
-                    styles={{
-                        pickerItem: {
-                            fontSize: 16,
-                        },
-                        text: {
-                          fontFamily: 'Bold',
-                          color: '#FFFFFF',
-                          fontSize: 15
-                        },
-                        pickerContainer: {
-                          backgroundColor: 'transparent',
-                          width: '50%',
-                          height: 150,
-                        },
-                        pickerLabel: {
-                            fontSize: 14,
-                            right: -15,
-                        },
-                        pickerLabelContainer: {
-                            width: 25,
-                        },
-                        pickerItemContainer: {
-                            width: 50,
-                        },
-                    }}
-                />
-                  <Text style={{
-                    fontFamily: 'Light',
-                    color: 'rgba(255,255,255,0.5)',
-                    fontSize: 12,
-                  }}>DAY</Text>
+                <View style={{flexDirection:'row-reverse',justifyContent:'space-between',alignItems:'center'}}>
+                  <DateTimePicker
+                    testID="dateTimePicker"
+                    value={selectedDate}
+                    mode="date"
+                    display="default"
+                    onChange={(event, selectedDate) => setSelectedDate(selectedDate)}
+                  />
+                  <Text style={{fontFamily: 'Bold', color: '#FFFFFF', fontSize: 17,}}>Age: {calculateAge(selectedDate)}</Text>
                 </View>
+                  
+                  
                 
               </View>
               
-              <View style={{width: "30%",gap: 8}}>
-                <Text style={{
-                  fontFamily: 'Regular',
-                  color: 'transparent',
-                  fontSize: 15,
-                }}>Set your birthdate</Text>
-                <View style={{
-                  alignItems: 'center',
-                  flexDirection: 'row',
-                  borderColor: '#262626',
-                  borderWidth: 1,
-                  borderRadius: 12,
-                  backgroundColor: '#06070A',
-                }}>
-                <TimerPicker
-                    padWithNItems={1}
-                    onDurationChange={(duration) => setStartTimeM(duration.hours)}
-                    hourLabel=""
-                    hideSeconds
-                    hideMinutes
-                    styles={{
-                        pickerItem: {
-                            fontSize: 16,
-                        },
-                        text: {
-                          fontFamily: 'Bold',
-                          color: '#FFFFFF',
-                          fontSize: 15
-                        },
-                        pickerContainer: {
-                          backgroundColor: 'transparent',
-                          width: '50%',
-                          height: 150,
-                        },
-                        pickerLabel: {
-                            fontSize: 14,
-                            right: -15,
-                        },
-                        pickerLabelContainer: {
-                            width: 25,
-                        },
-                        pickerItemContainer: {
-                            width: 50,
-                        },
-                    }}
-                />
-                  <Text style={{
-                    fontFamily: 'Light',
-                    color: 'rgba(255,255,255,0.5)',
-                    fontSize: 12,
-                  }}>MON</Text>
-                </View>
-                
-              </View>
-              <View style={{width: "30%",gap: 8}}>
-                <Text style={{
-                  fontFamily: 'Regular',
-                  color: 'transparent',
-                  fontSize: 15,
-                }}>Set your birthdate</Text>
-                <View style={{
-                  alignItems: 'center',
-                  flexDirection: 'row',
-                  borderColor: '#262626',
-                  borderWidth: 1,
-                  borderRadius: 12,
-                  backgroundColor: '#06070A',
-                }}>
-                <TimerPicker
-                    padWithNItems={1}
-                    onDurationChange={(duration) => setStartTimeY(duration.hours)}
-                    hourLabel=""
-                    hideSeconds
-                    hideMinutes
-                    styles={{
-                        pickerItem: {
-                            fontSize: 16,
-                        },
-                        text: {
-                          fontFamily: 'Bold',
-                          color: '#FFFFFF',
-                          fontSize: 15
-                        },
-                        pickerContainer: {
-                          backgroundColor: 'transparent',
-                          width: '50%',
-                          height: 150,
-                        },
-                        pickerLabel: {
-                            fontSize: 14,
-                            right: -15,
-                        },
-                        pickerLabelContainer: {
-                            width: 25,
-                        },
-                        pickerItemContainer: {
-                            width: 50,
-                        },
-                    }}
-                />
-                  <Text style={{
-                    fontFamily: 'Light',
-                    color: 'rgba(255,255,255,0.5)',
-                    fontSize: 12,
-                  }}>YEAR</Text>
-                </View>
-                
-              </View>
               
             </View>
 
@@ -347,9 +195,11 @@ export default function ChangesInfo() {
 
             </View>
             
+            
             <View style={{marginTop: 50}}>
               <TouchableOpacity onPress={() => {
                 Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
+                
                 putchInfo()
               }}>
                 <View style={{
@@ -382,6 +232,24 @@ export default function ChangesInfo() {
   )
 }
 
+const calculateAge = (birthdate) => {
+  const currentDate = new Date();
+  const birthdateYear = birthdate.getFullYear();
+  const birthdateMonth = birthdate.getMonth() + 1;
+  const birthdateDay = birthdate.getDate();
+  const currentYear = currentDate.getFullYear();
+  const currentMonth = currentDate.getMonth() + 1;
+  const currentDay = currentDate.getDate();
+
+  let age = currentYear - birthdateYear;
+  if (
+    currentMonth < birthdateMonth ||
+    (currentMonth === birthdateMonth && currentDay < birthdateDay)
+  ) {
+    age--;
+  }
+  return age;
+};
 const headerStyle = StyleSheet.create({
   bg: {
     width: Dimensions.get('window').width,

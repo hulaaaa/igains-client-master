@@ -1,6 +1,7 @@
 import { Alert, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import React, { useEffect } from 'react'
 import { useNavigation } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface Task {
   title: string;
@@ -9,6 +10,27 @@ interface Task {
 }
 
 export default function TrainingCourse() {
+  const getExer = async () => {
+    const token = await AsyncStorage.getItem('token');
+    const email = await AsyncStorage.getItem('email');
+    const url = `http://192.168.0.214:8090/api/users/change`;
+
+    const requestOptions = {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(dataBody)
+    };
+
+    fetch(url, requestOptions)
+      .then(response => {
+        return response.text();
+      })
+      .catch(err => console.log(err))
+      .finally(() => {navigation.navigate('Home')});
+  }
   let tasks: Task[] = [
     {
       title: "Full Strenght Legs and dick",

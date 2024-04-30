@@ -15,13 +15,16 @@ import InputIconName from '../../../assets/svg/InputIconName';
 import InputIconMail from '../../../assets/svg/InputIconMail';
 import InputIconPass from '../../../assets/svg/InputIconPass';
 import Toast from 'react-native-toast-message';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 interface IFormInput {
   userName: string;
   email: string;
   password: string;
 }
 
-export default function RegisterLayout() {
+export default function RegisterLayout({route}) {
+  const { handleLogin } = route.params;
+
   const navigation = useNavigation();
   const [isLocked, setIsLocked] = useState(false);
   const [isFocused, setIsFocused] = useState({
@@ -41,14 +44,63 @@ export default function RegisterLayout() {
       password: "",
     },
   });
-
-  const onSubmit: SubmitHandler<IFormInput> = (data) => {
-    Toast.show({
-      type: 'success',
-      visibilityTime: 4000,
-      text1: `Welcome in our Family, ${data.userName}!`,
-      text2: 'Let\'s training! 🏋️'
+  const retrieveToken = async () => {
+    try {
+      const token = await AsyncStorage.getItem('token');
+      if (token !== null) {
+        console.log(`its ok:${token}`);
+      }
+    } catch (error) {
+      console.error('Error retrieving token:', error);
+    }
+  };
+  const fnLogin = async(basicInfo)=> {
+    const basicInfoLogin = {
+      email: basicInfo.email,
+      password: basicInfo.password,
+    }
+    AsyncStorage.setItem('email',basicInfoLogin.email); 
+    
+    fetch('http://192.168.0.214:8090/auth/signin', {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json, text/plain, */*',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(basicInfoLogin)
+    })
+    .then(res => {
+      if (!res.ok) {
+        Toast.show({
+          type: 'error',
+          visibilityTime: 4000,
+          text1: '404!',
+          text2: 'This account does not exist. ⛔️'
+        });
+        AsyncStorage.removeItem('email'); 
+        throw new Error('Network response was not ok');
+      }
+      return res.json(); 
+    })
+    .then(data => {
+      const token = data.token; 
+      AsyncStorage.setItem('token', token); 
+      retrieveToken(); 
+      Toast.show({
+        type: 'success',
+        visibilityTime: 4000,
+        text1: 'Welcome back!',
+        text2: 'Let\'s training! 🏋️'
+      });
+      handleLogin()
+      navigation.navigate('ChangesInfo') 
+    })
+    .catch(err => {    
+      AsyncStorage.removeItem('email'); 
+      console.error('There was a problem with the request:', err)
     });
+  }
+  const onSubmit: SubmitHandler<IFormInput> = (data) => {
     const basicInfo = {
       age: 0,
       gender: 0,
@@ -66,8 +118,26 @@ export default function RegisterLayout() {
       },
       body: JSON.stringify(basicInfo)
     })
-    .then(res => console.log(JSON.stringify(res)))
+    .then(res => {
+      if(res.status==200){
+        fnLogin(basicInfo)
+        Toast.show({
+          type: 'success',
+          visibilityTime: 4000,
+          text1: `Welcome in our Family, ${data.userName}!`,
+          text2: 'Let\'s training! 🏋️'
+        });
+      }else{
+        Toast.show({
+          type: 'error',
+          visibilityTime: 4000,
+          text1: '404!',
+          text2: 'This account does not exist. ⛔️'
+        })
+      }
+    })
     .catch(err=> console.log(err))
+    
   };
 
   return (

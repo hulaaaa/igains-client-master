@@ -2383,6 +2383,13 @@
     prompts "^2.4.2"
     semver "^7.5.2"
 
+"@react-native-community/datetimepicker@^8.0.0":
+  version "8.0.0"
+  resolved "https://registry.yarnpkg.com/@react-native-community/datetimepicker/-/datetimepicker-8.0.0.tgz#2d0ee2c122495f556d42563a69ffaa8b63e66db9"
+  integrity sha512-hFiGlG5ovhspLYIZlvRs7sMg2NtKjHaG2CJQbECQH1M31760cR7BjYujS/MCM2d44ihhn4ZKLspAyXVN+Gh08g==
+  dependencies:
+    invariant "^2.2.4"
+
 "@react-native-community/masked-view@^0.1.11":
   version "0.1.11"
   resolved "https://registry.yarnpkg.com/@react-native-community/masked-view/-/masked-view-0.1.11.tgz#2f4c6e10bee0786abff4604e39a37ded6f3980ce"
@@ -6693,6 +6700,11 @@ react-native-redash@^18.1.3:
     normalize-svg-path "^1.0.1"
     parse-svg-path "^0.1.2"
 
+react-native-roll-picker@^1.0.6:
+  version "1.0.6"
+  resolved "https://registry.yarnpkg.com/react-native-roll-picker/-/react-native-roll-picker-1.0.6.tgz#351d244e827ff57f85bad56b30c637ec18bde032"
+  integrity sha512-JbbydFuPjvykqlaZ8OvP0BPLQgBHEy/+rZ9ztNbnqlojfuY8RL1dZ7Vqx2lfrZmCvYoLvJaZbHeu1G1hL8LwFQ==
+
 react-native-ruler-picker@^0.2.1:
   version "0.2.1"
   resolved "https://registry.yarnpkg.com/react-native-ruler-picker/-/react-native-ruler-picker-0.2.1.tgz#225dcad7e8800d80ec3fad87be2a697da92c88c7"
@@ -7071,6 +7083,11 @@ rimraf@~2.6.2:
   integrity sha512-mwqeW5XsA2qAejG46gYdENaxXjx9onRNCfn7L0duuP4hCuTIi/QO7PDK07KJfp1d+izWPrzEJDcSqBa0OZQriA==
   dependencies:
     glob "^7.1.3"
+
+roll-picker-native@^1.0.3:
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/roll-picker-native/-/roll-picker-native-1.0.3.tgz#c9e85d5c5b4cbc9a7cabf049298b4f4f6b9b1bc2"
+  integrity sha512-AQILzwKQRaDA0Peg6JuZbwtaOMhfZPAn88+7WC1+/2Uh1IFckVtVS/KRg+SLQj+DX3npbOX6TXhhjF0gib00jw==
 
 run-parallel@^1.1.9:
   version "1.2.0"

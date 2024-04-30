@@ -1,5 +1,5 @@
 import { Dimensions, Modal, RefreshControl, SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import Tabs from '../../components/Tabs';
 import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
@@ -9,11 +9,20 @@ import TasksTodayHome from '../../components/TasksTodayHome';
 import FavExercises from '../../components/FavExercises';
 import { StatusBar } from 'expo-status-bar';
 import TrainingCourse from '../../components/TrainingCourse';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useNavigation } from '@react-navigation/native';
 
 SplashScreen.preventAutoHideAsync();
 
 
+const AWARDS_TEXT = "Complete your Awards 🔥";
+const FAV_EXERCISES_TEXT = "Favourite Exercises ❤️";
+const TRAINING_COURSES_TEXT = "Training courses 💪🏻";
+
 export default function Home() {
+  const [allEx, setAllEx] = useState({})
+  const [getUser, setGetUser] = useState({})
+  const navigation = useNavigation<any>();
   const [refreshing, setRefreshing] = useState(false);
   const [fontsLoaded, fontError] = useFonts({
     'Regular': require('../../../assets/fonts/regular.otf'),
@@ -23,54 +32,85 @@ export default function Home() {
     'Bold': require('../../../assets/fonts/bold.otf'),
     'BoldItalic': require('../../../assets/fonts/bold-italic.otf'),
   });
-  const onLayoutRootView = useCallback(async () => {
+ 
+  const handleFontLoading = useCallback(async () => {
     if (fontsLoaded || fontError) {
       await SplashScreen.hideAsync();
     }
   }, [fontsLoaded, fontError]);
-  if (!fontsLoaded && !fontError) {
-    return null;
-  }
-  const onRefresh = () => {
+
+  const getAllExercises = async () => {
+    try {
+      const url = `http://192.168.0.214:8090/exercise/getall`;
+      const response = await fetch(url);
+      if (!response.ok) { throw new Error('Failed to fetch exercises')}
+      const data = await response.json();
+      const categoriesMap = {};
+      data.forEach(item => { categoriesMap[item.exerciseCategory] = item.exerciseImage });
+      setAllEx(categoriesMap);
+    } catch (error) {
+      console.error(error);
+    }
+    finally{
+      const token = await AsyncStorage.getItem('token')
+      const email = await AsyncStorage.getItem('email')
+      const url = `http://192.168.0.214:8090/api/users/get/${email}`;
+      fetch(url, {
+        method: 'GET',
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+      .then(response => {
+        if (!response.ok) { throw new Error('Network response was not ok') }
+        return response.json();
+      })
+      .then(data => {
+        setGetUser(data)
+      })
+    }
+  };
+  useEffect(()=>{handleRefresh()},[])
+  const handleRefresh = () => {
     setRefreshing(true);
-    setTimeout(() => {
-      setRefreshing(false);
-    }, 800);
-  }
+    getAllExercises();
+    setTimeout(() => {setRefreshing(false);}, 800);
+  };
+
+  if (!fontsLoaded && !fontError) {return null;}
   
   return (
-    <View style={styles.container} onLayout={onLayoutRootView}>
+    <View style={styles.container} onLayout={handleFontLoading}>
       <SafeAreaView>
       <ScrollView
         refreshControl={
           <RefreshControl
             tintColor={'#E0FE10'}
             refreshing={refreshing}
-            onRefresh={onRefresh}
+            onRefresh={handleRefresh}
           />
         } showsVerticalScrollIndicator={false}>
-        {/* HEADER and SEARCH BAR */}
+          
         <View style={styles.header_search}>
-          <HeaderText first="Hello, Dmytro 👋🏻" second={false} />
+          <HeaderText first={`Hello, ${getUser.userName} 👋🏻`} second={false} />
           <SearchBar />
         </View>
-          {/* TASKS for TODAY */}
           <View style={styles.divtasks}>
-            <Text style={{ fontFamily: 'Regular', fontSize: 21, color: 'white', }}>Complete your Awards 🔥</Text>
-            <TasksTodayHome />
+            <Text style={{ fontFamily: 'Regular', fontSize: 21, color: 'white', }}>{AWARDS_TEXT}</Text>
+            <TasksTodayHome getUser={getUser.userAwards} />
           </View>
 
-          {/* FAVORITE EXERCISES */}
+
           <View style={styles.divtasks}>
-            <Text style={{ fontFamily: 'Regular', fontSize: 21, color: 'white', }}>Favourite Exercises ❤️</Text>
+            <Text style={{ fontFamily: 'Regular', fontSize: 21, color: 'white', }}>{FAV_EXERCISES_TEXT}</Text>
             <FavExercises />
           </View>
 
-          {/* TRAINING COURSES */}
-          <View style={styles.divtasks}>
-            <Text style={{ fontFamily: 'Regular', fontSize: 21, color: 'white', }}>Training courses 💪🏻</Text>
-            <TrainingCourse/>
-          </View>
+
+          {allEx && Object.keys(allEx).length > 0 && (
+            <View style={styles.divtasks}>
+              <Text style={{ fontFamily: 'Regular', fontSize: 21, color: 'white', }}>{TRAINING_COURSES_TEXT}</Text>
+              <TrainingCourse allEx={allEx} navigation={navigation} />
+            </View>
+          )}
 
         </ScrollView>
       </SafeAreaView>

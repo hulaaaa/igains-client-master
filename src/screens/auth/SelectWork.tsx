@@ -5,11 +5,14 @@ import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
 import { Path, Svg } from 'react-native-svg';
 SplashScreen.preventAutoHideAsync();
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import { useStore } from '../../services/ZustandModalPassword';
 import { Workout } from '../../services/ZustandModalPassword'; 
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function SelectWork() {
+  const route = useRoute();
+  const { category } = route.params;
   const [refreshing, setRefreshing] = useState(false);
   const [fontsLoaded, fontError] = useFonts({
     'Regular': require('../../../assets/fonts/regular.otf'),
@@ -28,64 +31,51 @@ export default function SelectWork() {
     return null;
   }
   const navigation = useNavigation<any>();
-  const workout = [
-    {
-      id: 0,
-      title: "Running",
-      image: { uri: "https://firebasestorage.googleapis.com/v0/b/i-gains.appspot.com/o/Image%20Home%20Screen%2F1.png?alt=media&token=3dacd2f4-6fb4-4bcb-9879-f3c823f0c03c" },
-      min: 15,
-      kcal: 70,
-      select: false,
-    },
-    {
-      id: 1,
-      title: "Swimming",
-      image: { uri: "https://firebasestorage.googleapis.com/v0/b/i-gains.appspot.com/o/Image%20Home%20Screen%2F2.png?alt=media&token=d38205e5-b3b1-4cec-8e44-76c80054c4d9" },
-      min: 120,
-      kcal: 450,
-      select: false,
-    },
-    {
-      id: 2,
-      title: "Boxing",
-      image: { uri: "https://firebasestorage.googleapis.com/v0/b/i-gains.appspot.com/o/Image%20Home%20Screen%2F1.png?alt=media&token=3dacd2f4-6fb4-4bcb-9879-f3c823f0c03c" },
-      min: 10,
-      kcal: 80,
-      select: false,
-    },
-    {
-      id: 3,
-      title: "Stretching",
-      image: { uri: "https://firebasestorage.googleapis.com/v0/b/i-gains.appspot.com/o/Image%20Home%20Screen%2F2.png?alt=media&token=d38205e5-b3b1-4cec-8e44-76c80054c4d9" },
-      min: 30,
-      kcal: 150,
-      select: false,
-    }
-  ];
-  const [workoutItem, setWorkout] = useState(workout);
-
   const voidSelectWorkout = useStore((state) => state.voidSelectWorkout);
 
-  const toggleSelect = useCallback((id:number) => {
-    setWorkout((prevWorkouts) =>
-      prevWorkouts.map((workout) =>
-        workout.id === id ? { ...workout, select: !workout.select } : workout
-      )
-    );
-  }, []);
+ 
+  const [allEx, setAllEx] = useState([{}])
 
-  const handleStartWorkout = () => {
-    const selectedWorkouts = workoutItem.filter(workout => workout.select);
-    voidSelectWorkout(selectedWorkouts);
-    navigation.navigate('Workout');
+  const getAllExercises =  () => {
+    const url = `http://192.168.0.214:8090/exercise/getall`
+    fetch(url)
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      return response.json();
+    })
+    .then(data => {
+      const nData = []
+      for (const iterator of data) {
+        iterator.exerciseCategory == category?nData.push(iterator):null
+      }
+      setAllEx(nData)
+    })
   };
-
   const onRefresh = () => {
     setRefreshing(true);
+    getAllExercises()
     setTimeout(() => {
       setRefreshing(false);
     }, 800);
   }
+  const toggleSelect = useCallback((id:number) => {
+    setAllEx((prevWorkouts) =>
+      prevWorkouts.map((workout) =>
+        workout.id === id ? { ...workout, exerciseSelected: !workout.exerciseSelected } : workout
+      )
+    );
+    
+  }, []);
+  const handleStartWorkout = () => {
+    const selectedWorkouts = allEx.filter(workout => workout.exerciseSelected);
+    voidSelectWorkout(selectedWorkouts);
+    navigation.navigate('Workout');
+  };
+  useEffect(()=>{
+    onRefresh()
+  },[])
 
   return (
     <View style={styles.container} onLayout={onLayoutRootView}>
@@ -120,7 +110,7 @@ export default function SelectWork() {
                 fontSize: 21,
                 fontFamily: 'Regular',
               
-              }}>Full Strenght Legs and Arms </Text>
+              }}>{category}</Text>
             </View>
             <View>
               <Svg
@@ -155,7 +145,7 @@ export default function SelectWork() {
               width: Dimensions.get('window').width - 50,
             }}>
               {
-                workoutItem?.map((item, index) => (
+                allEx.map((item, index) => (
                   <View key={index} style={{
                     backgroundColor: '#17181B',
                     width: '100%',
@@ -171,7 +161,7 @@ export default function SelectWork() {
                     <View style={{flexDirection: 'row', height: '100%',width:'70%', alignItems: 'center', gap: 20}}>
                       <View>
                         {
-                          item.select ? (
+                          item.exerciseSelected? (
                             <TouchableOpacity 
                             onPress={() => toggleSelect(item.id)}
                             style={{
@@ -232,7 +222,7 @@ export default function SelectWork() {
                           fontSize: 15, 
                           fontFamily: 'Bold',
                         }}>
-                          {item.title}
+                          {item.exerciseTitle}
                         </Text>
                         <View style={{flexDirection: 'row', gap: 5, alignItems: 'center'}}>
                           <Svg
@@ -251,7 +241,7 @@ export default function SelectWork() {
                             fontSize: 12, 
                             fontFamily: 'Light'
                           }}>
-                              {item.min} min
+                              {item.exerciseDuration} min
                           </Text>
                         </View>
                         <View style={{flexDirection: 'row', gap: 5, alignItems: 'center'}}>
@@ -271,14 +261,14 @@ export default function SelectWork() {
                             fontSize: 12, 
                             fontFamily:'Light'
                             }}>
-                              {item.kcal} kcal
+                              {item.exerciseKcal} kcal
                           </Text>
                         </View>
                       </View>
                     </View>
                   
                     {/* IMAGE */}
-                    <Image style={{width: '30%', height: 80, borderRadius:12}} source={item.image} />
+                    <Image style={{width: '30%', height: 80, borderRadius:12}} source={{uri:  item.exerciseImage}} />
                   </View>
                 ))
               }

@@ -17,29 +17,29 @@ interface Task {
     present: number;
 }
 
-export default function TasksTodayHome() {
+export default function TasksTodayHome({userAwards}) {
   
   const navigation = useNavigation<any>();
   let tasks: Task[] = [
       {
           title: "Shiny Star",
           icon: <ShinyStartIcon/>,
-          present: 100,
+          present: !userAwards?0:userAwards,
       },
       {
           title: "Sniper",
           icon: <SniperIcon/>,
-          present: 30,
+          present: !userAwards?0:userAwards,
       },
       {
           title: "Ghost",
           icon: <GhostIcon/>,
-          present: 10,
+          present: !userAwards?0:userAwards,
       },
       {
           title: "First Sweat",
           icon: <ShinyStartIcon/>,
-          present: 0,
+          present: !userAwards?0:userAwards,
       },
   ]
     return (

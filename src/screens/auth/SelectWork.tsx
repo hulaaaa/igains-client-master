@@ -113,20 +113,13 @@ export default function SelectWork() {
               }}>{category}</Text>
             </View>
             <View>
-              <Svg
-                width={10}
-                height={17}
-                viewBox="0 0 10 17"
-                fill="none"
-              >
-                <Path
-                  d="M8.5 1L1 8.5L8.5 16"
-                  stroke="none"
-                  strokeWidth={1.5}
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </Svg>
+            <Svg width={16} height={15} fill="none">
+              <Path
+                stroke="#fff"
+                strokeWidth={1.5}
+                d="M7.348 2.586 8 3.73l.652-1.144c.86-1.509 2.51-2.061 3.97-1.743 1.428.313 2.628 1.45 2.628 3.379 0 1.306-.77 2.735-2.218 4.468-1.07 1.281-2.426 2.637-3.945 4.155-.354.353-.717.716-1.087 1.089-.371-.374-.735-.738-1.09-1.092C5.393 11.325 4.037 9.97 2.968 8.69 1.521 6.957.75 5.528.75 4.222c0-1.923 1.198-3.067 2.625-3.383 1.455-.323 3.106.224 3.973 1.747Z"
+              />
+            </Svg>
             </View>
           </View>
           <View style={styles.main}>

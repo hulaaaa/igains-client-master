@@ -62,18 +62,20 @@ export default function SelectWork() {
       setRefreshing(false);
     }, 800);
   }
+  const [isEmpty,setIsEmpty] = useState(true)
   const toggleSelect = useCallback((id:number) => {
     setAllEx((prevWorkouts) =>
       prevWorkouts.map((workout) =>
         workout.id === id ? { ...workout, exerciseSelected: !workout.exerciseSelected } : workout
       )
     );
-    
   }, []);
+  
+  
   const handleStartWorkout = () => {
     const selectedWorkouts = allEx.filter(workout => workout.exerciseSelected);
     voidSelectWorkout(selectedWorkouts);
-    // navigation.navigate('Workout');
+    navigation.navigate('Workout');
   };
   const [added,setAdded] = useState(false)
   const [infoUser,setInfoUser] = useState({})
@@ -141,15 +143,22 @@ export default function SelectWork() {
     getUser()
     const selectedWorkouts = allEx.filter(workout => workout.exerciseSelected);
     setFavEx(selectedWorkouts)
+    
     for (const iterator of selectedWorkouts) {
       fnAddFavorite(iterator.id)
     }
   }
   
   useEffect(()=>{
+    const selectedWorkouts = allEx.filter(workout => workout.exerciseSelected);
+    setFavEx(selectedWorkouts)
     onRefresh()
   },[])
   
+  useEffect(() => {
+    const anySelected = allEx.some(workout => workout.exerciseSelected);
+    setIsEmpty(!anySelected);
+  }, [allEx]);
 
   return (
     <View style={styles.container} onLayout={onLayoutRootView}>
@@ -359,18 +368,34 @@ export default function SelectWork() {
           </View>
           
         </ScrollView>
-        <TouchableOpacity 
-          onPress={handleStartWorkout}
-          style={styles.btnGo}>
-            <Text style={{
-              color: '#17181B',
-              fontSize: 16,
-              fontFamily: 'Regular',
-              textAlign: 'center',
-            }}>
-              Start Workout
-            </Text>
-        </TouchableOpacity>
+        {
+          !isEmpty?(
+            <TouchableOpacity 
+              onPress={handleStartWorkout}
+              style={styles.btnGo}>
+                <Text style={{
+                  color: '#17181B',
+                  fontSize: 16,
+                  fontFamily: 'Regular',
+                  textAlign: 'center',
+                }}>
+                  Start Workout
+                </Text>
+            </TouchableOpacity>
+          ):(
+            <TouchableOpacity 
+              style={styles.btnSt}>
+                <Text style={{
+                  color: 'rgba(23,24,27,0.5)',
+                  fontSize: 16,
+                  fontFamily: 'Regular',
+                  textAlign: 'center',
+                }}>
+                  Start Workout
+                </Text>
+            </TouchableOpacity>
+          )
+        }
       </SafeAreaView>
       <StatusBar style="light" />
     </View>
@@ -403,6 +428,14 @@ const styles = StyleSheet.create({
     width: Dimensions.get('window').width - 50,
     padding: 15,
     backgroundColor: '#E0FE10',
+    borderRadius: 12,
+  },
+  btnSt: {
+    position: 'absolute',
+    bottom: 50,
+    width: Dimensions.get('window').width - 50,
+    padding: 15,
+    backgroundColor: 'rgba(224,254,16,0.35)',
     borderRadius: 12,
   }
 })

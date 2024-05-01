@@ -1,5 +1,5 @@
 import { SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View,Dimensions, Image } from 'react-native'
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { StatusBar } from 'expo-status-bar'
 import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
@@ -44,25 +44,82 @@ export default function Workout() {
       ]
     );
   }
-  {/* 
-    <TouchableOpacity 
-      style={{marginTop:40}} 
-      onPress={()=>navigation.navigate('SelectWork')}
-    >
-      <Text 
-        style={{color: 'red',fontSize:30}}
-      >
-        QUITE
-      </Text>
-    </TouchableOpacity>
-    {selectedWorkouts.map((item) =>
-      (
-        <Text style={{color:'white',fontSize:30}} key={item.id}>
-          {item.title}
-        </Text>
-      )
-    )} 
-  */}
+  const formatTime = (time) => {
+    const minutes = Math.floor(time / 60);
+    const seconds = time % 60;
+    return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+  };
+  const [totalTime, setTotalTime] = useState(0);
+  const [precentTime, setPrecentTime] = useState(0);
+  const [timeNow, setTimeNow] = useState(0);
+  const [finishKcal, setFinishKcal] = useState(0);
+  const [isPlay, setIsPlay] = useState(false);
+  const timerRef = useRef(null);
+  const [currentKcal, setCurrentKcal] = useState(0);
+
+  const [caloriesPerSecond, setCaloriesPerSecond] = useState(0); // Додайте стейт для збереження caloriesPerSecond
+  let selectedWorkout = []
+  const preStartFn = (intt) => {
+    selectedWorkout = selectedWorkouts[intt];
+    setTotalTime(Number(selectedWorkout.exerciseDuration * 60));
+    setFinishKcal(Number(selectedWorkout.exerciseKcal));
+    
+    const caloriesPerSecond = Number(selectedWorkout.exerciseKcal) / (Number(selectedWorkout.exerciseDuration) * 60);
+    setCaloriesPerSecond(caloriesPerSecond); // Встановіть caloriesPerSecond у стейт
+  }
+  
+  
+
+  const playBtnHndl = () => {
+    setIsPlay(!isPlay);
+    if (!isPlay) {
+      startTimer();
+    } else {
+      clearInterval(timerRef.current);
+    }
+  }
+
+  const startTimer = () => {
+    timerRef.current = setInterval(() => {
+      setTimeNow(prevTime => {
+        const newTime = prevTime + 1;
+        if (newTime >= totalTime) {
+          clearInterval(timerRef.current);
+          setTimeNow(0);
+          setPrecentTime(100);
+          setCurrentKcal(prevKcal => {
+            const newKcal = prevKcal + caloriesPerSecond;
+            Alert.alert("Exercise Completed", `You've completed the exercise and burned ${newKcal} kcal!`);
+            return newKcal;
+          });
+          return 0;
+        }
+        setPrecentTime(Math.floor((newTime / totalTime) * 100));
+        return newTime;
+      });
+      setCurrentKcal(prevKcal => prevKcal + caloriesPerSecond);
+    }, 1000);
+  };
+  
+
+  useEffect(() => {
+    preStartFn(0);
+    return () => {
+      clearInterval(timerRef.current);
+    };
+  }, [])
+
+  useEffect(() => {
+    if (totalTime > 0) {
+      const caloriesPerSecond = finishKcal / (totalTime * 60); // Оновлено значення caloriesPerSecond
+      const interval = setInterval(() => {
+        setCurrentKcal(prevKcal => prevKcal + caloriesPerSecond);
+      }, 1000);
+  
+      return () => clearInterval(interval);
+    }
+  }, [totalTime, finishKcal]);
+  
 
   return (
     <View style={styles.container} onLayout={onLayoutRootView}>
@@ -101,7 +158,7 @@ export default function Workout() {
                   fontSize: 30,
                   fontFamily: 'BoldItalic',
                 }}>
-                  47
+                  {currentKcal.toFixed(1)}
                 </Text>
               </View>
               <Text style={{
@@ -134,7 +191,7 @@ export default function Workout() {
             fontSize: 40,
             fontFamily: 'BoldItalic',
           }}>
-            13%
+            {precentTime}%
           </Text>
         </View>
 
@@ -157,21 +214,33 @@ export default function Workout() {
           </TouchableOpacity>
 
           {/* PAUSE & PLAY */}
-          <TouchableOpacity>
-            <Svg
-              width={71}
-              height={71}
-              viewBox="0 0 71 71"
-              fill="none"
-            >
-              <Circle cx={35.5} cy={35.5} r={35.5} fill="#06070A" />
-              <Path
-                d="M30 26v19M41 26v19"
-                stroke="#E0FE10"
-                strokeWidth={3}
-                strokeLinecap="round"
-              />
-            </Svg>
+          <TouchableOpacity onPress={playBtnHndl}>
+            {
+              isPlay?(
+              <Svg
+                width={71}
+                height={71}
+                viewBox="0 0 71 71"
+                fill="none"
+              >
+                <Circle cx={35.5} cy={35.5} r={35.5} fill="#06070A" />
+                <Path
+                  d="M30 26v19M41 26v19"
+                  stroke="#E0FE10"
+                  strokeWidth={3}
+                  strokeLinecap="round"
+                />
+              </Svg>
+              ): (
+                <Svg width={71} height={71} fill="none">
+                  <Circle cx={35.5} cy={35.5} r={35.5} fill="#06070A" />
+                  <Path
+                    fill="#E0FE10"
+                    d="M46.5 34.634a1 1 0 0 1 0 1.732l-15.75 9.093a1 1 0 0 1-1.5-.866V26.407a1 1 0 0 1 1.5-.866l15.75 9.093Z"
+                  />
+                </Svg>
+              )
+            }
           </TouchableOpacity>
 
           {/* NEXT */}
@@ -194,14 +263,14 @@ export default function Workout() {
         <View style={styles.progressView}>
           <View style={{display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between'}}>
             <Text style={{color: '#06070A', fontSize: 15, fontFamily: 'Regular'}}>
-              03:47
+            {formatTime(timeNow)}
             </Text>
             <Text style={{color: '#06070A', fontSize: 15, fontFamily: 'Regular'}}>
-              12:30
+            {formatTime(totalTime)}
             </Text>
           </View>
           <Progress.Bar 
-            progress={0.3} 
+            progress={precentTime/100} 
             width={null} 
             borderWidth={1}
             borderColor='#06070A'

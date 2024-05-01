@@ -76,7 +76,7 @@ export default function SelectWork() {
     // navigation.navigate('Workout');
   };
   const [added,setAdded] = useState(false)
-  const [infoUser,setInfoUser] = useState([{}])
+  const [infoUser,setInfoUser] = useState({})
 
   const getUser = async() => {
     const token = await AsyncStorage.getItem('token')
@@ -95,50 +95,55 @@ export default function SelectWork() {
     .then(data=> {
       setInfoUser(data)
     })
-    .finally(()=>{
-      console.log('USER: ' + JSON.stringify(infoUser));
-    })
   }
 
   const fnAddFavorite = async(idEx) => {
     const token = await AsyncStorage.getItem('token')
     const email = await AsyncStorage.getItem('email')
     const url = `http://192.168.0.214:8090/favorites/add`;
-    
-    fetch(url, {
-      method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            'exerciseId': idEx,
-            'email': email
-          })
-    })
-    .then(response=>{
-      if (!response.ok) throw new Error('Network response was not ok')
-        setAdded(true)
+    for (const iterator of infoUser.favorites) {
+      if(iterator.exercise.id == idEx) {    
         Toast.show({
-            type: 'success',
-            visibilityTime: 4000,
-            text1: `Add new training to your Favorite!`,
-            text2: `Let\'s train! 🏋️‍♂️`
+          type: 'info',
+          visibilityTime: 4000,
+          text1: `Already you have that exercises`
         });
-        return response.text();
-    })
-    .catch(err=>{console.error(err)})
+      }else {
+        fetch(url, {
+          method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                'exerciseId': idEx,
+                'email': email
+              })
+        })
+        .then(response=>{
+              if (!response.ok) throw new Error('Network response was not ok')
+              setAdded(true)
+              Toast.show({
+                  type: 'success',
+                  visibilityTime: 4000,
+                  text1: `Add new training to your Favorite!`,
+                  text2: `Let\'s train! 🏋️‍♂️`
+              });
+              return response.text();
+        })
+        .catch(err=>{console.error(err)})
+      }
+    }
+    
   }
 
   const addFavorite = () => {
+    getUser()
     const selectedWorkouts = allEx.filter(workout => workout.exerciseSelected);
     setFavEx(selectedWorkouts)
-    
     for (const iterator of selectedWorkouts) {
       fnAddFavorite(iterator.id)
     }
-   
-    getUser()
   }
   
   useEffect(()=>{

@@ -8,6 +8,7 @@ import { Svg, Path, Rect } from 'react-native-svg';
 import { Dimensions } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Toast from 'react-native-toast-message';
 SplashScreen.preventAutoHideAsync();
 
 export default function Favorite() {
@@ -63,8 +64,33 @@ export default function Favorite() {
     }
   }
 
-  const toggleSelect = useCallback((id: number) => {
-    // Implement your logic here
+  const toggleSelect = useCallback(async(id: number) => {
+    const token = await AsyncStorage.getItem('token');
+    const url = `http://192.168.0.214:8090/favorites/del`;
+    const email = await AsyncStorage.getItem('email')
+    
+    fetch(url, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        'exerciseId': id,
+        'email': email
+      })
+    })
+    .then(response=>{
+      if (!response.ok) throw new Error('Network response was not ok')
+        Toast.show({
+            type: 'success',
+            visibilityTime: 4000,
+            text1: `Successful delete exercises!`,
+            text2: `Let\'s train! 🏋️‍♂️`
+        });
+        return response.text();
+    })
+    .catch(err=>{console.error(err)})
   }, []);
 
   const onRefresh = () => {

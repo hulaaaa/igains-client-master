@@ -69,6 +69,8 @@ export default function SelectWork() {
         workout.id === id ? { ...workout, exerciseSelected: !workout.exerciseSelected } : workout
       )
     );
+    console.log(allEx);
+    
   }, []);
   
   
@@ -100,45 +102,52 @@ export default function SelectWork() {
     })
   }
 
-  const fnAddFavorite = async(idEx) => {
-    const token = await AsyncStorage.getItem('token')
-    const email = await AsyncStorage.getItem('email')
+  const fnAddFavorite = async (idEx) => {
+    const token = await AsyncStorage.getItem('token');
+    const email = await AsyncStorage.getItem('email');
     const url = `http://192.168.0.214:8090/favorites/add`;
-    for (const iterator of infoUser.favorites) {
-      if(iterator.exercise.id == idEx) {    
-        Toast.show({
-          type: 'info',
-          visibilityTime: 4000,
-          text1: `Already you have that exercises`
+  
+    // Check if the exercise is already in favorites
+    const alreadyInFavorites = infoUser.favorites.some(
+      (favorite) => favorite.exercise.id === idEx
+    );
+  
+    if (alreadyInFavorites) {
+      Toast.show({
+        type: 'info',
+        visibilityTime: 4000,
+        text1: `Already you have that exercises`,
+      });
+    } else {
+      // If not, add it to favorites
+      fetch(url, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          'exerciseId': idEx,
+          'email': email,
+        }),
+      })
+        .then(response => {
+          if (!response.ok) throw new Error('Network response was not ok');
+          setAdded(true);
+          Toast.show({
+            type: 'success',
+            visibilityTime: 4000,
+            text1: `Add new training to your Favorite!`,
+            text2: `Let's train! 🏋️‍♂️`,
+          });
+          return response.text();
+        })
+        .catch(err => {
+          console.error(err);
         });
-      }else {
-        fetch(url, {
-          method: 'POST',
-              headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-              },
-              body: JSON.stringify({
-                'exerciseId': idEx,
-                'email': email
-              })
-        })
-        .then(response=>{
-              if (!response.ok) throw new Error('Network response was not ok')
-              setAdded(true)
-              Toast.show({
-                  type: 'success',
-                  visibilityTime: 4000,
-                  text1: `Add new training to your Favorite!`,
-                  text2: `Let\'s train! 🏋️‍♂️`
-              });
-              return response.text();
-        })
-        .catch(err=>{console.error(err)})
-      }
     }
-    
-  }
+  };
+  
 
   const addFavorite = () => {
     getUser()

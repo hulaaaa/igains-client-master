@@ -1,7 +1,7 @@
 import { TimerPicker } from "react-native-timer-picker";
 import { RulerPicker } from 'react-native-ruler-picker';
 import { StyleSheet, Text, View, Modal, TouchableOpacity, Dimensions, TextInput } from 'react-native'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import * as Haptics from 'expo-haptics';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import Toast from 'react-native-toast-message';
@@ -13,13 +13,14 @@ import { useStore } from '../../services/ZustandModalPassword';
 import { SelectList } from 'react-native-dropdown-select-list'
 import { Path, Svg } from 'react-native-svg';
 import { duration } from "moment";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 interface IFormInput {
   email: string;
   password: string;
   repassword: string;
 }
-export default function AddNewExercise() {
+export default function AddNewExercise({activeDay, selectedMonth}) {
   const modalVisible = useStore(state => state.visibleModal);
   const setModalVisible = useStore(state => state.voidVisibleModal);
   const displayModal = async () => {
@@ -45,18 +46,92 @@ export default function AddNewExercise() {
       repassword: "",
     },
   });
+  const [allEx, setAllEx] = React.useState([]);
+  const [selectId, setSelectId] = React.useState(0);
+  const getAllExercises = async () => {
+    try {
+      const url = `http://192.168.0.214:8090/exercise/getall`;
+      const response = await fetch(url);
+      if (!response.ok) { throw new Error('Failed to fetch exercises')}
+      const data = await response.json();
+      const categoriesMap = [{}];
+      data.forEach((item, index) => { categoriesMap[index] = item.exerciseTitle });
+      setAllEx(categoriesMap);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const getAllExercises2 = async (selected) => {
+    try {
+      const token = await AsyncStorage.getItem('token');
+      const email = await AsyncStorage.getItem('email');
+      const url = `http://192.168.0.214:8090/exercise/getall`;
+      const response = await fetch(url);
+      if (!response.ok) { throw new Error('Failed to fetch exercises')}
+      const data = await response.json();
+      data.forEach((item) => {
+        if (item.exerciseTitle === selected) {
+          setSelectId(Number(item.id))
+          const totalTimeInMinutes = (Number(startTime.hours) * 60) + Number(startTime.minutes);
+          console.log(`Name title: ${item.id}${selected}\n  Time of break:${breakTime}\n  Start Time: ${totalTimeInMinutes}min\n  Number of set: ${numOfSet}`);
+          console.log(activeDay, selectedMonth);
+          console.log(token);
+          
+          
+          const url = `http://192.168.0.214:8090/calendar/add`;
+          fetch(url, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              'exerciseId': item.id,
+              'email': email,
+              'breakDuration': Number(breakTime),
+              'startTime': Number(totalTimeInMinutes),
+              'setQuantity': Number(numOfSet),
+              'isCompleted':false,
+
+              'calendarDate': `${activeDay} ${selectedMonth}`
+            }),
+          })
+            .then(response => {
+              if (!response.ok) throw new Error('Network response was not ok');
+                Toast.show({
+                  type: 'success',
+                  visibilityTime: 4000,
+                  text1: `Add new training to your Favorite!`,
+                  text2: `Let's train! 🏋️‍♂️`,
+                });
+                return response.text();
+            })
+            .catch(err => {
+              console.error(err);
+            });
+        }
+      });
+      
+    } catch (error) {
+      console.error(error);
+    }
+  };
+  
+  
   const [selected, setSelected] = React.useState("");
   const [breakTime, setBreakTime] = React.useState(0);
   const [numOfSet, setNumOfSet] = React.useState(0);
   const [startTime, setStartTime] = React.useState(0)
+  
   const onSubmit: SubmitHandler<IFormInput> = () => {
     if(selected!==""){
-        console.log(`Reset password: ${selected} ${breakTime}`);
+        getAllExercises2(selected)
         Toast.show({
           type: 'success',
           visibilityTime: 4000,
           text1: `Add ${selected} to your plan!`,
-          text2: `Let\'s train! ${breakTime} ${numOfSet} ${startTime} 🏋️‍♂️`
+          text2: `Let\'s train! 🏋️‍♂️`
         });
         setTimeout(() => {
           setModalVisible()
@@ -72,14 +147,13 @@ export default function AddNewExercise() {
   };
   
   
-  const data = [
-      {key:'1', value:'Running'},
-      {key:'2', value:'Yoga'},
-      {key:'3', value:'Swimming'},
-      {key:'4', value:'Gym'},
-  ]
   const minBreakTime = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]
-
+  useEffect(()=>{
+    getAllExercises()
+  },[])
+  
+  
+  
   return (
     <View style={headerStyle.centeredView}>
       <View style={headerStyle.modalView}>
@@ -122,7 +196,7 @@ export default function AddNewExercise() {
               }}>Select activities</Text>
               <SelectList 
                 setSelected={(val) => setSelected(val)} 
-                data={data} 
+                data={allEx} 
                 search={false}
                 searchicon={false}
                 arrowicon={
@@ -233,7 +307,7 @@ export default function AddNewExercise() {
                     fontFamily: 'Light',
                     color: 'rgba(255,255,255,0.5)',
                     fontSize: 12,
-                  }}>Feb 29{'\n'}Thu</Text>
+                    }}>{activeDay} {selectedMonth}</Text>
                 </View>
                 
               </View>

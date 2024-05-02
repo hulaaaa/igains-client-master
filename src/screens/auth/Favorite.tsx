@@ -64,38 +64,54 @@ export default function Favorite() {
     }
   }
 
-  const toggleSelect = useCallback(async(id: number) => {
+  const toggleSelect = useCallback(async (exercise) => {
     const token = await AsyncStorage.getItem('token');
     const url = `http://192.168.0.214:8090/favorites/del`;
-    const email = await AsyncStorage.getItem('email')
-    
+    const email = await AsyncStorage.getItem('email');
+  
     fetch(url, {
-      method: 'POST',
+      method: 'DELETE',
       headers: {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        'exerciseId': id,
+        'exerciseId': exercise.id,
         'email': email
       })
     })
-    .then(response=>{
-      if (!response.ok) throw new Error('Network response was not ok')
-        Toast.show({
-            type: 'success',
-            visibilityTime: 4000,
-            text1: `Successful delete exercises!`,
-            text2: `Let\'s train! 🏋️‍♂️`
-        });
-        return response.text();
+    .then(response => {
+      if (!response.ok) throw new Error('Network response was not ok');
+      // Успішно видалено, оновлюємо стан workoutItem
+      const updatedWorkoutItem = { ...workoutItem };
+      updatedWorkoutItem.favorites = updatedWorkoutItem.favorites.filter(favorite => favorite.exercise.id !== exercise.id);
+      setWorkoutItem(updatedWorkoutItem);
+  
+      Toast.show({
+        type: 'success',
+        visibilityTime: 4000,
+        text1: `Successful delete exercises!`,
+        text2: `Let's train! 🏋️‍♂️`
+      });
+      return response.text();
     })
-    .catch(err=>{console.error(err)})
-  }, []);
+    .catch(err => {
+      console.error(err);
+      Toast.show({
+        type: 'error',
+        visibilityTime: 4000,
+        text1: `Error deleting exercises!`,
+        text2: `Please try again later.`
+      });
+    });
+  }, [workoutItem]);
+  
+  
 
   const onRefresh = () => {
     setRefreshing(true);
     getUser();
+    getFavoriteExercises()
     setTimeout(() => {
       setRefreshing(false);
     }, 800);
@@ -141,7 +157,7 @@ export default function Favorite() {
               width: Dimensions.get('window').width - 50,
             }}>
               {
-               favoriteExercises.length > 0 ? (
+                
                 favoriteExercises.map((exercise, index) => (
                     <View key={index} style={{
                       backgroundColor: '#17181B',
@@ -157,11 +173,8 @@ export default function Favorite() {
                       {/* SELECT BOX */}
                       <View style={{flexDirection: 'row', height: '100%',width:'70%', alignItems: 'center', gap: 20}}>
                         <View>
-                          {
-                            exercise.exerciseSelected ? (
-                              
-                              <TouchableOpacity 
-                              onPress={() => toggleSelect(item.id)}
+                        <TouchableOpacity 
+                              onPress={() => toggleSelect(exercise)}
                               style={{
                                 width: 38,
                                 height: 38,
@@ -186,27 +199,6 @@ export default function Favorite() {
                                       />
                                     </Svg>
                               </TouchableOpacity>
-                            ):(
-                              <TouchableOpacity 
-                              onPress={() => toggleSelect(exercise.id)}                       
-                              style={{
-                                width: 38,
-                                height: 38,
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                              }}>
-                                <Svg xmlns="http://www.w3.org/2000/svg" fill="none">
-                                  <Rect width={37} height={37} x={0.5} y={0.5} stroke="#27292E" rx={6.5} />
-                                  <Path
-                                    stroke="#343841"
-                                    strokeWidth={0.6}
-                                    d="m18.974 13.394.26.45.259-.45c.998-1.724 2.917-2.35 4.598-1.989 1.669.36 3.076 1.685 3.076 3.873 0 1.496-.89 3.052-2.391 4.821-1.116 1.316-2.534 2.71-4.102 4.254-.468.46-.95.934-1.44 1.423-.493-.49-.975-.964-1.444-1.426-1.567-1.542-2.984-2.936-4.099-4.25-1.5-1.77-2.391-3.326-2.391-4.822 0-2.18 1.404-3.513 3.07-3.877 1.679-.367 3.598.255 4.604 1.993Z"
-                                  />
-                                </Svg>
-                              </TouchableOpacity>
-                            )
-                          }
                         </View>
                         <View style={{
                           width:1,
@@ -274,9 +266,6 @@ export default function Favorite() {
                       <Image style={{width: '30%', height: 80, borderRadius:12}} source={{uri: exercise.exerciseImage}} />
                     </View>
                   ))
-                ) : (
-                  <Text style={{ color: '#FFFFFF' }}>No data available</Text>
-                )
               }
             </View>
         </ScrollView>

@@ -2,7 +2,7 @@ import * as Haptics from 'expo-haptics';
 import { SwipeListView } from 'react-native-swipe-list-view';
 import moment from 'moment';
 import { Alert, Dimensions, Modal, RefreshControl, SafeAreaView, ScrollView, StyleSheet, Text, TouchableHighlight, TouchableOpacity, View } from 'react-native'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import Tabs from '../../components/Tabs'
 import { useCallback } from 'react';
 import { useFonts } from 'expo-font';
@@ -16,6 +16,7 @@ import AddNewExercise from '../../modal/Planer/AddNewExercise';
 import { useNavigation } from '@react-navigation/native';
 import { useStore } from '../../services/ZustandModalPassword';
 import DeleteRow from '../../modal/Planer/DeleteRow';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -34,9 +35,33 @@ export default function Planer() {
       await SplashScreen.hideAsync();
     }
   }, [fontsLoaded, fontError]);
-
   if (!fontsLoaded && !fontError) {
     return null;
+  }
+  const [listData, setListData] = useState([]);
+
+  const [user, setUser] = useState({})
+  const getUser = async () => {
+    const token = await AsyncStorage.getItem('token');
+    const email = await AsyncStorage.getItem('email');
+    const url = `http://192.168.0.214:8090/api/users/get/${email}`;
+    fetch(url, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    })
+      .then(response => {
+        if (!response.ok) throw new Error('Network response was not ok');
+        return response.json();
+      })
+      .then(data => {
+        setUser(data);
+      })
+      .catch(error => {
+        console.error('Error fetching data:', error);
+      });
   }
   const onRefresh = () => {
     setRefreshing(true);
@@ -45,8 +70,11 @@ export default function Planer() {
     }, 800);
   };
   
+
+  
   let calendarData = []
   let calendarDataMonth = []
+  
   const [activeDay, setActiveDay] = useState(moment().format('DD'));
   const [selectI, setSelectI] = useState(0)
   let repeatLoop = 0
@@ -83,7 +111,6 @@ export default function Planer() {
         }),
       })
   }
-  console.log(calendarData);
   
   for(let j = 0; j < 3; j++){
     calendarDataMonth.push({
@@ -98,37 +125,7 @@ export default function Planer() {
     })
   }
   const [selectedMonth, setSelectedMonth] = useState(calendarDataMonth[selectI].month)
-  const [listData, setListData] = useState([
-      {
-        timeStart: '10:00',
-        titleSession: 'Cardio Session',
-        setQ: 2,
-        timeAll: 30,
-        breakTime: 10
-      },
-      {
-        timeStart: '13:45',
-        titleSession: 'Swimming',
-        setQ: 1,
-        timeAll: 40,
-        breakTime: 5
-      },
-      {
-        timeStart: '17:38',
-        titleSession: 'Running',
-        setQ: 1,
-        timeAll: 35,
-        breakTime: 10
-      },
-      {
-        timeStart: '20:08',
-        titleSession: 'Yoga',
-        setQ: 3,
-        timeAll: 85,
-        breakTime: 0
-      },
-    ]
-  );
+  
   const closeRow = (rowMap, rowKey) => {
       if (rowMap[rowKey]) {
           rowMap[rowKey].closeRow();
@@ -142,7 +139,7 @@ export default function Planer() {
       setListData(newData);
   };
   const onRowDidOpen = rowKey => {
-    // Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)
     console.log('This row opened', rowKey);
   };
 
@@ -291,8 +288,27 @@ export default function Planer() {
             </Svg>
         </TouchableOpacity>
     </View>
-);
-  
+  );
+
+  const filterUserCalendar = useCallback(() => {
+    if (!user || !user.userCalendar) return [];
+    
+    const selectedDate = `${activeDay} ${selectedMonth}`;
+    const filteredData = user.userCalendar.filter(item => {
+        return moment(item.calendarDate, 'DD MMM').isSame(selectedDate, 'day');
+    });
+    return filteredData;
+  }, [activeDay, selectedMonth, user]);
+
+  useEffect(()=>{
+    getUser()
+    onRefresh()
+  },[])
+  useEffect(() => {
+    const filteredData = filterUserCalendar();
+    setListData(filteredData);
+  }, [activeDay, selectedMonth, filterUserCalendar]);
+
   return (
     <View style={styles.container} onLayout={onLayoutRootView}>
       {
@@ -303,7 +319,7 @@ export default function Planer() {
           visible={modalVisible}
           onRequestClose={setModalVisible}
         >
-          <AddNewExercise />
+          <AddNewExercise activeDay={activeDay} selectedMonth={selectedMonth} />
         </Modal>
       ):
         (<Modal

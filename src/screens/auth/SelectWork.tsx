@@ -75,6 +75,7 @@ export default function SelectWork() {
   const handleStartWorkout = () => {
     const selectedWorkouts = allEx.filter(workout => workout.exerciseSelected);
     voidSelectWorkout(selectedWorkouts);
+    console.log(selectedWorkouts);
     navigation.navigate('Workout');
   };
   const [added,setAdded] = useState(false)
@@ -152,6 +153,7 @@ export default function SelectWork() {
   useEffect(()=>{
     const selectedWorkouts = allEx.filter(workout => workout.exerciseSelected);
     setFavEx(selectedWorkouts)
+    
     onRefresh()
   },[])
   

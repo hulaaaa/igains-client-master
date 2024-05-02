@@ -1,3 +1,5 @@
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { HoldToCallButton } from "react-native-hold-to-call-button";
 import { SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View,Dimensions, Image } from 'react-native'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { StatusBar } from 'expo-status-bar'
@@ -49,6 +51,10 @@ export default function Workout() {
     const seconds = time % 60;
     return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
   };
+  const [currentExerciseIndex, setCurrentExerciseIndex] = useState(0);
+  const [completedExercises, setCompletedExercises] = useState([]);
+  const [exerciseResults, setExerciseResults] = useState([]);
+
   const [totalTime, setTotalTime] = useState(0);
   const [precentTime, setPrecentTime] = useState(0);
   const [timeNow, setTimeNow] = useState(0);
@@ -57,27 +63,23 @@ export default function Workout() {
   const timerRef = useRef(null);
   const [currentKcal, setCurrentKcal] = useState(0);
 
-  const [caloriesPerSecond, setCaloriesPerSecond] = useState(0); // Додайте стейт для збереження caloriesPerSecond
-  let selectedWorkout = []
+  const [caloriesPerSecond, setCaloriesPerSecond] = useState(0);
+
   const preStartFn = (intt) => {
-    selectedWorkout = selectedWorkouts[intt];
+    const selectedWorkout = selectedWorkouts[intt];
     setTotalTime(Number(selectedWorkout.exerciseDuration * 60));
     setFinishKcal(Number(selectedWorkout.exerciseKcal));
-    
+    setTimeNow(0); // Reset the timer
+    setPrecentTime(0); // Reset the progress
+    setCurrentKcal(0); // Reset the current calories burned
+    setIsPlay(false); // Stop the timer if it's running
+    clearInterval(timerRef.current); // Clear the interval if it's running
+  
     const caloriesPerSecond = Number(selectedWorkout.exerciseKcal) / (Number(selectedWorkout.exerciseDuration) * 60);
-    setCaloriesPerSecond(caloriesPerSecond); // Встановіть caloriesPerSecond у стейт
+    setCaloriesPerSecond(caloriesPerSecond);
   }
   
   
-
-  const playBtnHndl = () => {
-    setIsPlay(!isPlay);
-    if (!isPlay) {
-      startTimer();
-    } else {
-      clearInterval(timerRef.current);
-    }
-  }
 
   const startTimer = () => {
     timerRef.current = setInterval(() => {
@@ -89,9 +91,11 @@ export default function Workout() {
           setPrecentTime(100);
           setCurrentKcal(prevKcal => {
             const newKcal = prevKcal + caloriesPerSecond;
-            Alert.alert("Exercise Completed", `You've completed the exercise and burned ${newKcal} kcal!`);
+            Alert.alert("Exercise Completed", `You've completed the exercise and burned ${newKcal.toFixed(1)} kcal!`);
+            completeExercise(); // Зберегти результати вправи після завершення
             return newKcal;
           });
+          completeExercise(); // Додавання виклику completeExercise() для завершення вправи
           return 0;
         }
         setPrecentTime(Math.floor((newTime / totalTime) * 100));
@@ -100,6 +104,65 @@ export default function Workout() {
       setCurrentKcal(prevKcal => prevKcal + caloriesPerSecond);
     }, 1000);
   };
+  
+  
+  const playBtnHndl = () => {
+    setIsPlay(!isPlay);
+    if (!isPlay) {
+      startTimer();
+    } else {
+      clearInterval(timerRef.current);
+      // completeExercise(); // Видаліть цей виклик
+    }
+  };
+  
+  const nextExercise = () => {
+    // Save data for the current exercise
+    completeExercise();
+  
+    // Move to the next exercise if available
+    if (currentExerciseIndex < selectedWorkouts.length - 1) {
+      const nextIndex = currentExerciseIndex + 1;
+      setCurrentExerciseIndex(nextIndex);
+      preStartFn(nextIndex);
+    } else {
+      // Reset exercise data when reaching the end
+      setCurrentExerciseIndex(0);
+      setCompletedExercises([]);
+      setExerciseResults([]);
+    }
+  };
+  
+  const prevExercise = () => {
+    // Save data for the current exercise
+    completeExercise();
+  
+    // Move to the previous exercise if available
+    if (currentExerciseIndex > 0) {
+      const prevIndex = currentExerciseIndex - 1;
+      setCurrentExerciseIndex(prevIndex);
+      preStartFn(prevIndex);
+    }
+  };
+  
+
+  const completeExercise = () => {
+    const currentExercise = selectedWorkouts[currentExerciseIndex]; 
+    const isDuplicate = completedExercises.some(exercise => exercise.id === currentExercise.id);
+    if (!isDuplicate) {
+      const exerciseData = {
+        id: currentExercise.id,
+        name: currentExercise.exerciseTitle,
+        time: timeNow,
+        caloriesBurned: currentKcal.toFixed(1)
+      };
+      setCompletedExercises(prevExercises => [...prevExercises, exerciseData]);
+      console.log(`Exercise completed: ${precentTime}%`);
+    }
+};
+
+  
+  
   
 
   useEffect(() => {
@@ -111,7 +174,7 @@ export default function Workout() {
 
   useEffect(() => {
     if (totalTime > 0) {
-      const caloriesPerSecond = finishKcal / (totalTime * 60); // Оновлено значення caloriesPerSecond
+      const caloriesPerSecond = finishKcal / (totalTime * 60); // Updated value of caloriesPerSecond
       const interval = setInterval(() => {
         setCurrentKcal(prevKcal => prevKcal + caloriesPerSecond);
       }, 1000);
@@ -120,7 +183,10 @@ export default function Workout() {
     }
   }, [totalTime, finishKcal]);
   
-
+  useEffect(() => {
+    setExerciseResults(completedExercises);
+  }, [completedExercises, currentExerciseIndex]);
+  
   return (
     <View style={styles.container} onLayout={onLayoutRootView}>
       <SafeAreaView>
@@ -198,20 +264,25 @@ export default function Workout() {
         {/* PLAYER BTN */}
         <View style={styles.player}>
           {/* PREV. */}
-          <TouchableOpacity>
-            <Svg
-              width={18}
-              height={21}
-              viewBox="0 0 18 21"
-              fill="none"
-            >
+          {currentExerciseIndex > 0 ? (
+            <TouchableOpacity style={{padding: 5}}  onPress={prevExercise}>
+              <Svg xmlns="http://www.w3.org/2000/svg" width={18} height={21} fill="none">
+                <Path
+                  fill="#000"
+                  d="M.5 11.366a1 1 0 0 1 0-1.732L16.25.541a1 1 0 0 1 1.5.866v18.186a1 1 0 0 1-1.5.866L.5 11.366Z"
+                />
+              </Svg>
+            </TouchableOpacity>
+          ) : (
+            <Svg xmlns="http://www.w3.org/2000/svg" width={18} height={21} fill="none">
               <Path
-                d="M.5 11.366a1 1 0 010-1.732L16.25.541a1 1 0 011.5.866v18.186a1 1 0 01-1.5.866L.5 11.366z"
                 fill="#000"
                 fillOpacity={0.4}
+                d="M.5 11.366a1 1 0 0 1 0-1.732L16.25.541a1 1 0 0 1 1.5.866v18.186a1 1 0 0 1-1.5.866L.5 11.366Z"
               />
             </Svg>
-          </TouchableOpacity>
+          )}
+          
 
           {/* PAUSE & PLAY */}
           <TouchableOpacity onPress={playBtnHndl}>
@@ -244,19 +315,38 @@ export default function Workout() {
           </TouchableOpacity>
 
           {/* NEXT */}
-          <TouchableOpacity>
-            <Svg
-              width={18}
-              height={21}
-              viewBox="0 0 18 21"
-              fill="none"
-            >
-              <Path
-                d="M17.5 9.634a1 1 0 010 1.732L1.75 20.459a1 1 0 01-1.5-.866V1.407A1 1 0 011.75.54L17.5 9.634z"
-                fill="#000"
-              />
-            </Svg>
-          </TouchableOpacity>
+          {currentExerciseIndex < selectedWorkouts.length - 1 ? (
+            <TouchableOpacity style={{padding: 5}}  onPress={nextExercise}>
+              <Svg
+                width={18}
+                height={21}
+                viewBox="0 0 18 21"
+                fill="none"
+              >
+                <Path
+                  d="M17.5 9.634a1 1 0 010 1.732L1.75 20.459a1 1 0 01-1.5-.866V1.407A1 1 0 01.75.54L17.5 9.634z"
+                  fill="#000"
+                />
+              </Svg>
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity style={{padding: 5}}  onPress={() => {
+              completeExercise();
+              console.log(completedExercises);
+            }}>
+              <Text style={{color: '#DF3525', fontSize: 15, fontFamily: 'Bold'}}>
+                STOP
+              </Text>
+            </TouchableOpacity>
+
+            // <Svg width={18} height={21} fill="none">
+            //     <Path
+            //       fill="#000"
+            //       fillOpacity={0.4}
+            //       d="M17.5 9.634a1 1 0 0 1 0 1.732L1.75 20.459a1 1 0 0 1-1.5-.866V1.407A1 1 0 0 1 1.75.54L17.5 9.634Z"
+            //     />
+            //   </Svg>
+          )}
         </View>
 
         {/* PROGRESS */}

@@ -73,7 +73,7 @@ export default function AddNewExercise({activeDay, selectedMonth}) {
       data.forEach((item) => {
         if (item.exerciseTitle === selected) {
           setSelectId(Number(item.id))
-          const totalTimeInMinutes = (Number(startTime.hours) * 60) + Number(startTime.minutes);
+          const totalTimeInMinutes = `${startTime.hours}:${startTime.minutes}`;
           console.log(`Name title: ${item.id}${selected}\n  Time of break:${breakTime}\n  Start Time: ${totalTimeInMinutes}min\n  Number of set: ${numOfSet}`);
           console.log(activeDay, selectedMonth);
           console.log(token);
@@ -90,10 +90,9 @@ export default function AddNewExercise({activeDay, selectedMonth}) {
               'exerciseId': item.id,
               'email': email,
               'breakDuration': Number(breakTime),
-              'startTime': Number(totalTimeInMinutes),
+              'startTime': totalTimeInMinutes.toString(),
               'setQuantity': Number(numOfSet),
               'isCompleted':false,
-
               'calendarDate': `${activeDay} ${selectedMonth}`
             }),
           })

@@ -184,12 +184,15 @@ export default function Planer() {
     console.log('This row opened', rowKey);
   };
 
-  const renderItem = data => (
-      <TouchableHighlight
-          onPress={() => console.log('You touched me')}
-          style={styles.rowFront}
-      >
-          <View style={{
+  const renderItem = (data,index) => (
+    <View>
+      {
+      (data.item.calendarDate === `${activeDay} ${selectedMonth}`)?(
+        <TouchableHighlight key={data.item.id}
+                  onPress={() => console.log('You touched me')}
+                  style={styles.rowFront}
+              >
+            <View style={{
             display: 'flex',
             flexDirection: 'row',
             alignItems: 'center',
@@ -202,7 +205,7 @@ export default function Planer() {
                 fontFamily: 'Light',
                 fontSize: 15,
               }}>
-                {moment((data.item.startTime).toString(), 'mmss').format('HH:mm')}
+                {moment((data.item.startTime), 'hm').format('HH:mm')}
               </Text>
               <Text style={{
                 color: '#FFFFFF',
@@ -216,13 +219,9 @@ export default function Planer() {
                 fontFamily: 'Light',
                 fontSize: 15,
               }}>
-                {/* {
-                  data.item.timeStart.slice(0,2)
-                  parseInt(data.item.timeStart.slice(3))+data.item.timeAll<60?
-                  `${data.item.timeStart.slice(0,2)}:${parseInt(data.item.timeStart.slice(3))+data.item.timeAll}`:
-                  `${parseInt(data.item.timeStart.slice(0,2))+parseInt((data.item.timeAll/60).toFixed(0))}:${parseInt(data.item.timeStart.slice(3))+data.item.timeAll-60}`
-                    
-                } */}
+                {
+                  moment(data.item.startTime, 'HH:mm').clone().add(data.item.exerciseDuration * data.item.setQuantity + (data.item.breakDuration * data.item.setQuantity - 1), 'minutes').format('HH:mm')
+                }
               </Text>
             </View>
 
@@ -246,7 +245,7 @@ export default function Planer() {
                   fontFamily: 'Regular',
                   fontSize: 14,
                 }}>
-                  {/* {user.item.setQ} time - {data.item.timeAll<60?`${data.item.timeAll}min`: `${(data.item.timeAll/60).toFixed(0)}h ${data.item.timeAll%60}m`} */}
+                  {data.item.setQuantity} time - {data.item.exerciseDuration} min
                 </Text>
                 <Text style={{
                   color: '#E0FE10',
@@ -258,9 +257,12 @@ export default function Planer() {
               </View>
             </View>
           </View>
-
-      </TouchableHighlight>
-  );
+        </TouchableHighlight>
+      ):(null)
+    }
+    </View>
+    
+  )
 
   const navigation = useNavigation();
   const modalVisible = useStore(state => state.visibleModal);
@@ -333,12 +335,10 @@ export default function Planer() {
   );
   
   useEffect(()=>{
+    getUser()
     onRefresh()
   },[])
 
-  useEffect(()=> {
-    console.log('userExer',user);
-  },[user])
   return (
     <View style={styles.container} onLayout={onLayoutRootView}>
       {

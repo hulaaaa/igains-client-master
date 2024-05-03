@@ -56,7 +56,6 @@ export default function Favorite() {
   }
   const [favoriteExercises, setFavoriteExercises] = useState([]);
 
-  // Отримати улюблені вправи з об'єкта користувача
   const getFavoriteExercises = () => {
     if (workoutItem && workoutItem.favorites && workoutItem.favorites.length > 0) {
       const exercises = workoutItem.favorites.map(favorite => favorite.exercise);
@@ -82,7 +81,6 @@ export default function Favorite() {
     })
     .then(response => {
       if (!response.ok) throw new Error('Network response was not ok');
-      // Успішно видалено, оновлюємо стан workoutItem
       const updatedWorkoutItem = { ...workoutItem };
       updatedWorkoutItem.favorites = updatedWorkoutItem.favorites.filter(favorite => favorite.exercise.id !== exercise.id);
       setWorkoutItem(updatedWorkoutItem);
@@ -170,7 +168,6 @@ export default function Favorite() {
                       alignItems: 'center',
                       justifyContent: 'space-between'
                     }}>
-                      {/* SELECT BOX */}
                       <View style={{flexDirection: 'row', height: '100%',width:'70%', alignItems: 'center', gap: 20}}>
                         <View>
                         <TouchableOpacity 
@@ -262,7 +259,6 @@ export default function Favorite() {
                         </View>
                       </View>
                     
-                      {/* IMAGE */}
                       <Image style={{width: '30%', height: 80, borderRadius:12}} source={{uri: exercise.exerciseImage}} />
                     </View>
                   ))

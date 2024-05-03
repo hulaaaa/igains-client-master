@@ -68,12 +68,11 @@ export default function Stat() {
     <View style={styles.container} onLayout={onLayoutRootView}>
       <SafeAreaView >
         <ScrollView refreshControl={<RefreshControl tintColor={'#E0FE10'} refreshing={refreshing} onRefresh={onRefresh}/>} showsVerticalScrollIndicator={false}>
-          {/* HEADER */}
+          
           <View style={styles.header_search}>
             <HeaderText first="Statistics" second={<BellAlertIcon/>} />
           </View>
-
-          {/* SELECT DAY'S */}
+ 
           <View style={styles.divtasks}>
             <TouchableOpacity onPress={()=>{setActiveToday('Today'), Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)}} style={activeToday==='Today'?{
               backgroundColor: '#FFFFFF',
@@ -143,8 +142,7 @@ export default function Stat() {
               <Text style={activeToday==='All time'?{ color: '#1E1E1E', fontFamily: 'Light', fontSize: 14 }:{color: '#FFFFFF', fontFamily: 'Light', fontSize: 14}}>All Time</Text>
             </TouchableOpacity>
           </View>
-
-          {/* STATISTICS */}
+ 
           <View style={styles.statDiv}>
             <View style={{backgroundColor: '#17181B',width: '32%', aspectRatio: 1/1, justifyContent:'center', borderRadius: 10,alignItems:'center', gap: 12}}>
               <CalBurnIcon />
@@ -206,8 +204,7 @@ export default function Stat() {
               </View>
             </View>
           </View>
-
-          {/* CHART STAT */}
+ 
           <View style={styles.chartDiv}>
             <View style={{alignItems: 'center', width:'100%',flexDirection:'row',justifyContent:'space-between'}}>
               <Text style={{
@@ -259,8 +256,7 @@ export default function Stat() {
               />
             </View>
           </View>
-
-          {/* STILL TASKS */}
+ 
           <TouchableOpacity 
             onPress={()=>{Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium),navigation.navigate("Planer") }}
             style={{
@@ -288,8 +284,7 @@ export default function Stat() {
             <JustArrow/>
             
           </TouchableOpacity>
-
-          {/* RECENTLY TRAIN */}
+ 
           <View style={{
             display: 'flex',
             width: Dimensions.get('window').width - 50,

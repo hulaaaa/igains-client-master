@@ -107,7 +107,6 @@ export default function SelectWork() {
     const email = await AsyncStorage.getItem('email');
     const url = `http://192.168.0.214:8090/favorites/add`;
   
-    // Check if the exercise is already in favorites
     const alreadyInFavorites = infoUser.favorites.some(
       (favorite) => favorite.exercise.id === idEx
     );
@@ -119,7 +118,6 @@ export default function SelectWork() {
         text1: `Already you have that exercises`,
       });
     } else {
-      // If not, add it to favorites
       fetch(url, {
         method: 'POST',
         headers: {
@@ -259,8 +257,7 @@ export default function SelectWork() {
                     flexDirection: 'row',
                     alignItems: 'center',
                     justifyContent: 'space-between'
-                  }}>
-                    {/* SELECT BOX */}
+                  }}> 
                     <View style={{flexDirection: 'row', height: '100%',width:'70%', alignItems: 'center', gap: 20}}>
                       <View>
                         {
@@ -369,8 +366,7 @@ export default function SelectWork() {
                         </View>
                       </View>
                     </View>
-                  
-                    {/* IMAGE */}
+                   
                     <Image style={{width: '30%', height: 80, borderRadius:12}} source={{uri:  item.exerciseImage}} />
                   </View>
                 ))

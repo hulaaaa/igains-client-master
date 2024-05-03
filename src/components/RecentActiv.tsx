@@ -1,7 +1,6 @@
 import { StyleSheet, Text, View } from 'react-native'
 import React from 'react'
 import { Path, Svg } from 'react-native-svg'
-// icon={<RunningIcon/>} title="Running" kcal={450} min={120} time="Sun, 06:00 - 08:00"/
 export default function RecentActiv({icon, title, kcal, min, time}:any) {
   return (
     <View style={styles.container}>

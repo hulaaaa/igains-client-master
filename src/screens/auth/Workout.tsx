@@ -69,11 +69,11 @@ export default function Workout() {
     const selectedWorkout = selectedWorkouts[intt];
     setTotalTime(Number(selectedWorkout.exerciseDuration * 60));
     setFinishKcal(Number(selectedWorkout.exerciseKcal));
-    setTimeNow(0); // Reset the timer
-    setPrecentTime(0); // Reset the progress
-    setCurrentKcal(0); // Reset the current calories burned
-    setIsPlay(false); // Stop the timer if it's running
-    clearInterval(timerRef.current); // Clear the interval if it's running
+    setTimeNow(0); 
+    setPrecentTime(0);  
+    setCurrentKcal(0); 
+    setIsPlay(false);  
+    clearInterval(timerRef.current);  
   
     const caloriesPerSecond = Number(selectedWorkout.exerciseKcal) / (Number(selectedWorkout.exerciseDuration) * 60);
     setCaloriesPerSecond(caloriesPerSecond);
@@ -92,10 +92,10 @@ export default function Workout() {
           setCurrentKcal(prevKcal => {
             const newKcal = prevKcal + caloriesPerSecond;
             Alert.alert("Exercise Completed", `You've completed the exercise and burned ${newKcal.toFixed(1)} kcal!`);
-            completeExercise(); // Зберегти результати вправи після завершення
+            completeExercise();  
             return newKcal;
           });
-          completeExercise(); // Додавання виклику completeExercise() для завершення вправи
+          completeExercise(); 
           return 0;
         }
         setPrecentTime(Math.floor((newTime / totalTime) * 100));
@@ -112,32 +112,26 @@ export default function Workout() {
       startTimer();
     } else {
       clearInterval(timerRef.current);
-      // completeExercise(); // Видаліть цей виклик
     }
   };
   
-  const nextExercise = () => {
-    // Save data for the current exercise
+  const nextExercise = () => { 
     completeExercise();
-  
-    // Move to the next exercise if available
+   
     if (currentExerciseIndex < selectedWorkouts.length - 1) {
       const nextIndex = currentExerciseIndex + 1;
       setCurrentExerciseIndex(nextIndex);
       preStartFn(nextIndex);
-    } else {
-      // Reset exercise data when reaching the end
+    } else { 
       setCurrentExerciseIndex(0);
       setCompletedExercises([]);
       setExerciseResults([]);
     }
   };
   
-  const prevExercise = () => {
-    // Save data for the current exercise
+  const prevExercise = () => { 
     completeExercise();
-  
-    // Move to the previous exercise if available
+   
     if (currentExerciseIndex > 0) {
       const prevIndex = currentExerciseIndex - 1;
       setCurrentExerciseIndex(prevIndex);
@@ -174,7 +168,7 @@ export default function Workout() {
 
   useEffect(() => {
     if (totalTime > 0) {
-      const caloriesPerSecond = finishKcal / (totalTime * 60); // Updated value of caloriesPerSecond
+      const caloriesPerSecond = finishKcal / (totalTime * 60); 
       const interval = setInterval(() => {
         setCurrentKcal(prevKcal => prevKcal + caloriesPerSecond);
       }, 1000);
@@ -238,8 +232,7 @@ export default function Workout() {
         </View>
         <Image source={require('../../../assets/images/app/workoutImg.png')} style={styles.image}/>
       </SafeAreaView>
-      <View style={styles.playerBottom}>
-        {/* COMPLETED */}
+      <View style={styles.playerBottom}> 
         <View style={{
           alignSelf:'flex-start',
           display: 'flex',
@@ -260,10 +253,8 @@ export default function Workout() {
             {precentTime}%
           </Text>
         </View>
-
-        {/* PLAYER BTN */}
-        <View style={styles.player}>
-          {/* PREV. */}
+ 
+        <View style={styles.player}> 
           {currentExerciseIndex > 0 ? (
             <TouchableOpacity style={{padding: 5}}  onPress={prevExercise}>
               <Svg xmlns="http://www.w3.org/2000/svg" width={18} height={21} fill="none">
@@ -283,8 +274,7 @@ export default function Workout() {
             </Svg>
           )}
           
-
-          {/* PAUSE & PLAY */}
+ 
           <TouchableOpacity onPress={playBtnHndl}>
             {
               isPlay?(
@@ -313,8 +303,7 @@ export default function Workout() {
               )
             }
           </TouchableOpacity>
-
-          {/* NEXT */}
+ 
           {currentExerciseIndex < selectedWorkouts.length - 1 ? (
             <TouchableOpacity style={{padding: 5}}  onPress={nextExercise}>
               <Svg
@@ -337,19 +326,10 @@ export default function Workout() {
               <Text style={{color: '#DF3525', fontSize: 15, fontFamily: 'Bold'}}>
                 STOP
               </Text>
-            </TouchableOpacity>
-
-            // <Svg width={18} height={21} fill="none">
-            //     <Path
-            //       fill="#000"
-            //       fillOpacity={0.4}
-            //       d="M17.5 9.634a1 1 0 0 1 0 1.732L1.75 20.459a1 1 0 0 1-1.5-.866V1.407A1 1 0 0 1 1.75.54L17.5 9.634Z"
-            //     />
-            //   </Svg>
+            </TouchableOpacity> 
           )}
         </View>
-
-        {/* PROGRESS */}
+ 
         <View style={styles.progressView}>
           <View style={{display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between'}}>
             <Text style={{color: '#06070A', fontSize: 15, fontFamily: 'Regular'}}>

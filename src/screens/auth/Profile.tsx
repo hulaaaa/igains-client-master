@@ -108,8 +108,7 @@ export default function Profile({route}) {
 
   return (
     <View style={styles.container} onLayout={onLayoutRootView}>
-      <SafeAreaView >
-        {/* HEADER */}
+      <SafeAreaView > 
         <View style={styles.header_search}>
           <HeaderText first="Profile" second={<DotThreeIcon/>} />
         </View>
@@ -121,10 +120,8 @@ export default function Profile({route}) {
             onRefresh={onRefresh}
           />
         } 
-        showsVerticalScrollIndicator={false}>
-          {/* NAME PHOTOS */}
-          <View style={styles.divtasks}>
-            {/* IMAGE AVATAR */}
+        showsVerticalScrollIndicator={false}> 
+          <View style={styles.divtasks}> 
             <View style={styles.divImage}>
               <Svg xmlns="http://www.w3.org/2000/svg" fill="none">
                 <Circle cx={42.5} cy={42.5} r={42.15} stroke="#fff" strokeWidth={0.7} />
@@ -133,8 +130,7 @@ export default function Profile({route}) {
                   d="M42.5 47.639c-12.169 0-18.5 7.194-18.5 11.305V61h37v-2.056c0-4.11-6.331-11.305-18.5-11.305ZM42.5 44.556c5.677 0 10.278-4.602 10.278-10.278S48.177 24 42.5 24c-5.676 0-10.277 4.602-10.277 10.278S36.824 44.556 42.5 44.556Z"
                 />
               </Svg>
-            </View>
-            {/* NAME */}
+            </View> 
             <View style={{
               display: 'flex',
               flexDirection: 'column',
@@ -157,8 +153,7 @@ export default function Profile({route}) {
               </Text>
             </View>
           </View>
-
-          {/* BODY DATA */}
+ 
           <View style={styles.divtasks}>
             <View style={styles.bodyDiv}>
               <View style={{display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3}}>
@@ -246,8 +241,7 @@ export default function Profile({route}) {
             </View>
             <View style={{width: '100%', marginTop: 10, height: 2, backgroundColor: '#15181B'}}/>
           </View>
-        
-          {/* WEEKLY PROGRES */}
+         
           <View style={styles.divtasks}>
             <Text style={{alignSelf: 'flex-start', fontFamily:'Regular', color: 'white', fontSize: 20}}>Weekly Progress</Text>
             <View style={{
@@ -268,8 +262,7 @@ export default function Profile({route}) {
               <Text style={progress<=0.5?{fontFamily:'Regular',fontSize:12, position: 'absolute', color:'white'}:{fontFamily:'Regular',fontSize:12, position: 'absolute', color:'#17181B'}}>{progress*100}%</Text>
             </View>
           </View>
-
-          {/* AWARDS */}
+ 
           <View style={styles.divtasks}>
             <Text style={{alignSelf: 'flex-start', marginTop: 10, fontFamily:'Regular', color: 'white', fontSize: 20}}>
               My Awards
@@ -295,8 +288,7 @@ export default function Profile({route}) {
 
             </View>
           </View>
-
-          {/* SETTING */}
+ 
           <View style={styles.divtasks}>
             <Text style={{alignSelf: 'flex-start', marginTop: 10, fontFamily:'Regular', color: 'white', fontSize: 20}}>
             Settings

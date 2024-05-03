@@ -300,8 +300,7 @@ export default function RegisterLayout({route}) {
                 <FbAuthSvg />
               </TouchableOpacity>
             </View>
-
-            {/* Create acc */}
+ 
             <TouchableOpacity onPress={() => {
               Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
               handleSubmit(onSubmit)();

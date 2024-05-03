@@ -35,12 +35,11 @@ export default function Planer() {
       await SplashScreen.hideAsync();
     }
   }, [fontsLoaded, fontError]);
+
   if (!fontsLoaded && !fontError) {
     return null;
   }
-  const [listData, setListData] = useState([]);
-
-  const [user, setUser] = useState({})
+  const [user,setUser] = useState([{}])
   const getUser = async () => {
     const token = await AsyncStorage.getItem('token');
     const email = await AsyncStorage.getItem('email');
@@ -57,24 +56,36 @@ export default function Planer() {
         return response.json();
       })
       .then(data => {
-        setUser(data);
+        const modifiedUserExer = data.userCalendar.map(item => {
+          const { exercise, ...rest } = item;
+          return {
+              ...rest,
+              exerciseCategory: exercise.exerciseCategory,
+              exerciseDuration: exercise.exerciseDuration,
+              exerciseImage: exercise.exerciseImage,
+              exerciseKcal: exercise.exerciseKcal,
+              exerciseSelected: exercise.exerciseSelected,
+              exerciseTitle: exercise.exerciseTitle,
+              id: exercise.id
+          };
+      });
+        setUser(modifiedUserExer);
       })
       .catch(error => {
         console.error('Error fetching data:', error);
       });
   }
+  
   const onRefresh = () => {
+    getUser()
     setRefreshing(true);
     setTimeout(() => {
       setRefreshing(false);
     }, 800);
   };
   
-
-  
   let calendarData = []
   let calendarDataMonth = []
-  
   const [activeDay, setActiveDay] = useState(moment().format('DD'));
   const [selectI, setSelectI] = useState(0)
   let repeatLoop = 0
@@ -125,7 +136,37 @@ export default function Planer() {
     })
   }
   const [selectedMonth, setSelectedMonth] = useState(calendarDataMonth[selectI].month)
-  
+  const [listData, setListData] = useState([
+      {
+        timeStart: '10:00',
+        titleSession: 'Cardio Session',
+        setQ: 2,
+        timeAll: 30,
+        breakTime: 10
+      },
+      {
+        timeStart: '13:45',
+        titleSession: 'Swimming',
+        setQ: 1,
+        timeAll: 40,
+        breakTime: 5
+      },
+      {
+        timeStart: '17:38',
+        titleSession: 'Running',
+        setQ: 1,
+        timeAll: 35,
+        breakTime: 10
+      },
+      {
+        timeStart: '20:08',
+        titleSession: 'Yoga',
+        setQ: 3,
+        timeAll: 85,
+        breakTime: 0
+      },
+    ]
+  );
   const closeRow = (rowMap, rowKey) => {
       if (rowMap[rowKey]) {
           rowMap[rowKey].closeRow();
@@ -139,7 +180,7 @@ export default function Planer() {
       setListData(newData);
   };
   const onRowDidOpen = rowKey => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)
+    // Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)
     console.log('This row opened', rowKey);
   };
 
@@ -154,14 +195,14 @@ export default function Planer() {
             alignItems: 'center',
             gap: 15
           }}>
-            {/* TEXT TIME DIV */}
+            
             <View>
               <Text style={{
                 color: '#FFFFFF',
                 fontFamily: 'Light',
                 fontSize: 15,
               }}>
-                {data.item.timeStart}
+                {moment((data.item.startTime).toString(), 'mmss').format('HH:mm')}
               </Text>
               <Text style={{
                 color: '#FFFFFF',
@@ -175,48 +216,49 @@ export default function Planer() {
                 fontFamily: 'Light',
                 fontSize: 15,
               }}>
-                {
-                  // data.item.timeStart.slice(0,2)
+                {/* {
+                  data.item.timeStart.slice(0,2)
                   parseInt(data.item.timeStart.slice(3))+data.item.timeAll<60?
                   `${data.item.timeStart.slice(0,2)}:${parseInt(data.item.timeStart.slice(3))+data.item.timeAll}`:
                   `${parseInt(data.item.timeStart.slice(0,2))+parseInt((data.item.timeAll/60).toFixed(0))}:${parseInt(data.item.timeStart.slice(3))+data.item.timeAll-60}`
                     
-                }
+                } */}
               </Text>
             </View>
 
-            {/* Vertical Green Line */}
+
             <View style={{ height: '100%', width: 1, borderRadius:5, backgroundColor: '#E0FE10' }}></View>
 
-            {/* ACTIVE DIV */}
+
             <View>
-              <Text style={{
-                color: '#FFFFFF',
-                fontFamily: 'Bold',
-                fontSize: 16,
-              }}>
-                {data.item.titleSession}
-              </Text>
+              
+            <Text style={{
+              color: '#FFFFFF',
+              fontFamily: 'Bold',
+              fontSize: 16,
+            }}>
+              {data.item.exerciseTitle}
+            </Text>
+
               <View>
                 <Text style={{
                   color: 'rgba(255,255,255,0.5)',
                   fontFamily: 'Regular',
                   fontSize: 14,
                 }}>
-                  {data.item.setQ} time - {data.item.timeAll<60?`${data.item.timeAll}min`: `${(data.item.timeAll/60).toFixed(0)}h ${data.item.timeAll%60}m`}
+                  {/* {user.item.setQ} time - {data.item.timeAll<60?`${data.item.timeAll}min`: `${(data.item.timeAll/60).toFixed(0)}h ${data.item.timeAll%60}m`} */}
                 </Text>
                 <Text style={{
                   color: '#E0FE10',
                   fontFamily: 'Light',
                   fontSize: 12,
                 }}>
-                  Break: {data.item.breakTime} min
+                  Break: {data.item.breakDuration} min
                 </Text>
               </View>
             </View>
-            </View>
+          </View>
 
-            
       </TouchableHighlight>
   );
 
@@ -289,26 +331,14 @@ export default function Planer() {
         </TouchableOpacity>
     </View>
   );
-
-  const filterUserCalendar = useCallback(() => {
-    if (!user || !user.userCalendar) return [];
-    
-    const selectedDate = `${activeDay} ${selectedMonth}`;
-    const filteredData = user.userCalendar.filter(item => {
-        return moment(item.calendarDate, 'DD MMM').isSame(selectedDate, 'day');
-    });
-    return filteredData;
-  }, [activeDay, selectedMonth, user]);
-
+  
   useEffect(()=>{
-    getUser()
     onRefresh()
   },[])
-  useEffect(() => {
-    const filteredData = filterUserCalendar();
-    setListData(filteredData);
-  }, [activeDay, selectedMonth, filterUserCalendar]);
 
+  useEffect(()=> {
+    console.log('userExer',user);
+  },[user])
   return (
     <View style={styles.container} onLayout={onLayoutRootView}>
       {
@@ -333,12 +363,11 @@ export default function Planer() {
       }
       <SafeAreaView>
         <View style={!modalVisible&&!modalVisibleDelete&&!modalVisibleEdit ?{ opacity: 1}:{ opacity: 0.15}}>
-          {/* HEADER */}
+          
           <View style={styles.header_search}>
             <HeaderText first="Calendar" second={null} />
           </View>
-
-          {/* HEADER PLANER */}
+ 
           <View style={styles.headerPlaner}>
             <View 
             style={{
@@ -425,8 +454,7 @@ export default function Planer() {
               
             </View>
           </View>
-
-          {/* SELECT DATE */}
+ 
             <View style={styles.selectDate}>
               <ScrollView showsHorizontalScrollIndicator={false} horizontal style={{ width: Dimensions.get('window').width - 50,}}>
                 {
@@ -465,11 +493,10 @@ export default function Planer() {
                 
               </ScrollView>
             </View>
-
-          {/* LIST PLANER ACTIVE */}
+ 
           <ScrollView style={styles.listPlaner} refreshControl={<RefreshControl tintColor={'#E0FE10'} refreshing={refreshing}onRefresh={onRefresh}/>} showsVerticalScrollIndicator={false}>
             <SwipeListView
-                data={listData}
+                data={user}
                 renderItem={renderItem}
                 renderHiddenItem={renderHiddenItem}
                 rightOpenValue={-164}
@@ -479,8 +506,7 @@ export default function Planer() {
                 onRowDidOpen={onRowDidOpen}
             />
           </ScrollView>
-
-          {/* ADD EXER BTN */}
+ 
           <TouchableOpacity onPress={()=>{setModalVisible(!modalVisible)}} style={{top: 620,position: 'absolute'}}>
             <View style={styles.botBtn}>
               <Text style={{
@@ -564,7 +590,6 @@ const styles = StyleSheet.create({
   rowBack: {
     width: Dimensions.get('window').width - 50,
     alignItems: 'center',
-    // backgroundColor: '#DDD',
     flexDirection: 'row',
     justifyContent: 'space-between',
     height: 80,

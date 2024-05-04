@@ -74,11 +74,6 @@ export default function AddNewExercise({activeDay, selectedMonth}) {
         if (item.exerciseTitle === selected) {
           setSelectId(Number(item.id))
           const totalTimeInMinutes = `${startTime.hours}:${startTime.minutes}`;
-          console.log(`Name title: ${item.id}${selected}\n  Time of break:${breakTime}\n  Start Time: ${totalTimeInMinutes}min\n  Number of set: ${numOfSet}`);
-          console.log(activeDay, selectedMonth);
-          console.log(token);
-          
-          
           const url = `http://192.168.0.214:8090/calendar/add`;
           fetch(url, {
             method: 'POST',
@@ -371,7 +366,7 @@ export default function AddNewExercise({activeDay, selectedMonth}) {
             <View style={{marginTop: 20}}>
               <TouchableOpacity onPress={() => {
                 Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-                handleSubmit(onSubmit)();
+                handleSubmit(onSubmit)(onSubmit);
               }}>
                 <View style={{
                   width: Dimensions.get('window').width - 110,

@@ -66,7 +66,8 @@ export default function Planer() {
               exerciseKcal: exercise.exerciseKcal,
               exerciseSelected: exercise.exerciseSelected,
               exerciseTitle: exercise.exerciseTitle,
-              id: exercise.id
+              idEx: exercise.id,
+              exerciseId: rest.id
           };
       });
         setUser(modifiedUserExer);
@@ -136,37 +137,8 @@ export default function Planer() {
     })
   }
   const [selectedMonth, setSelectedMonth] = useState(calendarDataMonth[selectI].month)
-  const [listData, setListData] = useState([
-      {
-        timeStart: '10:00',
-        titleSession: 'Cardio Session',
-        setQ: 2,
-        timeAll: 30,
-        breakTime: 10
-      },
-      {
-        timeStart: '13:45',
-        titleSession: 'Swimming',
-        setQ: 1,
-        timeAll: 40,
-        breakTime: 5
-      },
-      {
-        timeStart: '17:38',
-        titleSession: 'Running',
-        setQ: 1,
-        timeAll: 35,
-        breakTime: 10
-      },
-      {
-        timeStart: '20:08',
-        titleSession: 'Yoga',
-        setQ: 3,
-        timeAll: 85,
-        breakTime: 0
-      },
-    ]
-  );
+  
+  
   const closeRow = (rowMap, rowKey) => {
       if (rowMap[rowKey]) {
           rowMap[rowKey].closeRow();
@@ -174,14 +146,9 @@ export default function Planer() {
   };
   const deleteRow = (rowMap, rowKey) => {
       closeRow(rowMap, rowKey);
-      const newData = [...listData];
-      const prevIndex = listData.findIndex(item => item.key === rowKey);
-      newData.splice(prevIndex, 1);
-      setListData(newData);
   };
-  const onRowDidOpen = rowKey => {
-    // Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)
-    console.log('This row opened', rowKey);
+  const onRowDidOpen = (rowKey) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)
   };
 
   const renderItem = (data,index) => (
@@ -274,11 +241,13 @@ export default function Planer() {
   const modalVisibleEdit = useStore(state => state.visibleModalEdit);
   const setModalVisibleEdit = useStore(state => state.voidVisibleModalEdit);
 
+  const setOpenRow = useStore(state => state.voidOpenedRow);
+
   const renderHiddenItem = (data, rowMap) => (
     <View style={styles.rowBack}>
         <Text style={{color: 'transparent'}}>Left</Text>
         {/* DONE BTN */}
-        <TouchableOpacity
+        {/* <TouchableOpacity
             style={[styles.backRightBtn, styles.backRightBtnLeft]}
             onPress={() => closeRow(rowMap, data.item.key)}
         >
@@ -291,12 +260,15 @@ export default function Planer() {
               d="m1 7.527 4 4.21 9.5-10"
             />
           </Svg>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
 
         {/* DELETE BTN */}
         <TouchableOpacity
             style={[styles.backRightBtn, styles.backRightBtnRight]}
-            onPress={()=>setModalVisibleDelete(!modalVisibleDelete)}
+            onPress={()=>{
+              setOpenRow(data)
+              setModalVisibleDelete(!modalVisibleDelete)
+            }}
         >
             <Svg width={19} height={20} fill="none">
               <Path
@@ -625,6 +597,6 @@ const styles = StyleSheet.create({
     borderColor: '#27292E',
     borderWidth: 1,
     padding: 12,
-    right: 110,
+    right: 60,
   }
 })

@@ -1,9 +1,10 @@
 
 import { StyleSheet, Text, View, Modal, TouchableOpacity, Dimensions, TextInput } from 'react-native'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import * as Haptics from 'expo-haptics';
 
 import { useStore } from '../../services/ZustandModalPassword';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function DeleteRow() {
   const modalVisible = useStore(state => state.visibleModal);
@@ -11,11 +12,79 @@ export default function DeleteRow() {
 
   const modalVisibleDelete = useStore(state => state.visibleModalDelete);
   const setModalVisibleDelete = useStore(state => state.voidVisibleModalDelete);
+  const [user,setUser] = useState([{}])
+  const openedRow = useStore(state => state.openedRow);
+
+  const getUser = async () => {
+    const token = await AsyncStorage.getItem('token');
+    const email = await AsyncStorage.getItem('email');
+    
+    const url = `http://192.168.0.214:8090/calendar/delete`;
+    fetch(url, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        'calendarId': openedRow.item.id,
+        'email': email,
+      })})
+      .then(response => {
+        if (!response.ok) throw new Error('Network response was not ok');
+        return response.text();
+      })
+      .then(data => {
+        console.log(data);
+      })
+      .catch(error => {
+        console.error('Error fetching data:', error);
+      });
+  }
+  const deleteRow = async () => {
+    
+    const token = await AsyncStorage.getItem('token');
+    const email = await AsyncStorage.getItem('email');
+    const url = `http://192.168.0.214:8090/calendar/delete`;
+          // fetch(url, {
+          //   method: 'POST',
+          //   headers: {
+          //     'Authorization': `Bearer ${token}`,
+          //     'Content-Type': 'application/json',
+          //   },
+          //   body: JSON.stringify({
+          //     'exerciseId': item.id,
+          //     'email': email,
+          //     'breakDuration': Number(breakTime),
+          //     'startTime': totalTimeInMinutes.toString(),
+          //     'setQuantity': Number(numOfSet),
+          //     'isCompleted':false,
+          //     'calendarDate': `${activeDay} ${selectedMonth}`
+          //   }),
+          // })
+          //   .then(response => {
+          //     if (!response.ok) throw new Error('Network response was not ok');
+          //       Toast.show({
+          //         type: 'success',
+          //         visibilityTime: 4000,
+          //         text1: `Add new training to your Favorite!`,
+          //         text2: `Let's train! 🏋️‍♂️`,
+          //       });
+          //       return response.text();
+          //   })
+          //   .catch(err => {
+          //     console.error(err);
+          //   });
+  }
   const displayModal = async () => {
     setModalVisibleDelete()
+    deleteRow()
     await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
   }
-  
+  useEffect(()=>{
+    console.log(openedRow);
+    getUser()
+  },[])
   return (
     <View style={headerStyle.centeredView}>
       <View style={headerStyle.modalView}>

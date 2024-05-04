@@ -21,6 +21,9 @@ type Store = {
 
   selectWorkout: Workout[];
   voidSelectWorkout: (items: Workout[]) => void;
+
+  openedRow: [];
+  voidOpenedRow: (items: Workout[]) => void;
 };
 
 export const useStore = create<Store>((set) => ({
@@ -35,4 +38,7 @@ export const useStore = create<Store>((set) => ({
 
   selectWorkout: [],
   voidSelectWorkout: (items: Workout[]) => set({ selectWorkout: items }),
+
+  openedRow: [],
+  voidOpenedRow: (items) => set({ openedRow: items }),
 }));

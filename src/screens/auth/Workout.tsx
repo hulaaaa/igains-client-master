@@ -10,6 +10,10 @@ import { useNavigation } from '@react-navigation/native';
 import { Circle, Path, Svg } from 'react-native-svg';
 import { Alert } from 'react-native';
 import * as Progress from 'react-native-progress';
+import CircularProgress from 'react-native-circular-progress-indicator';
+import { AnimatedCircularProgress } from 'react-native-circular-progress';
+import Toast from 'react-native-toast-message';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -31,6 +35,8 @@ export default function Workout() {
     return null;
   }
   const navigation = useNavigation<any>();
+  const [lastExerciseFinished, setLastExerciseFinished] = useState(false);
+
   const selectedWorkouts = useStore((state) => state.selectWorkout);
   const confirmExit = () => {
     Alert.alert(
@@ -71,7 +77,6 @@ export default function Workout() {
     setFinishKcal(Number(selectedWorkout.exerciseKcal));
     setTimeNow(0); 
     setPrecentTime(0);  
-    setCurrentKcal(0); 
     setIsPlay(false);  
     clearInterval(timerRef.current);  
   
@@ -91,11 +96,9 @@ export default function Workout() {
           setPrecentTime(100);
           setCurrentKcal(prevKcal => {
             const newKcal = prevKcal + caloriesPerSecond;
-            Alert.alert("Exercise Completed", `You've completed the exercise and burned ${newKcal.toFixed(1)} kcal!`);
-            completeExercise();  
             return newKcal;
           });
-          completeExercise(); 
+          nextExercise()
           return 0;
         }
         setPrecentTime(Math.floor((newTime / totalTime) * 100));
@@ -104,6 +107,7 @@ export default function Workout() {
       setCurrentKcal(prevKcal => prevKcal + caloriesPerSecond);
     }, 1000);
   };
+  
   
   
   const playBtnHndl = () => {
@@ -123,21 +127,13 @@ export default function Workout() {
       setCurrentExerciseIndex(nextIndex);
       preStartFn(nextIndex);
     } else { 
-      setCurrentExerciseIndex(0);
+      setLastExerciseFinished(true);  
       setCompletedExercises([]);
       setExerciseResults([]);
     }
   };
   
-  const prevExercise = () => { 
-    completeExercise();
-   
-    if (currentExerciseIndex > 0) {
-      const prevIndex = currentExerciseIndex - 1;
-      setCurrentExerciseIndex(prevIndex);
-      preStartFn(prevIndex);
-    }
-  };
+  
   
 
   const completeExercise = () => {
@@ -151,15 +147,12 @@ export default function Workout() {
         caloriesBurned: currentKcal.toFixed(1)
       };
       setCompletedExercises(prevExercises => [...prevExercises, exerciseData]);
-      console.log(`Exercise completed: ${precentTime}%`);
     }
-};
+  };
 
-  
-  
-  
 
   useEffect(() => {
+    
     preStartFn(0);
     return () => {
       clearInterval(timerRef.current);
@@ -176,10 +169,50 @@ export default function Workout() {
       return () => clearInterval(interval);
     }
   }, [totalTime, finishKcal]);
-  
+  useEffect(() => {
+    if (currentExerciseIndex === selectedWorkouts.length - 1 && precentTime >= 99) {
+      setLastExerciseFinished(true);
+    } else {
+      setLastExerciseFinished(false);
+    }
+  }, [currentExerciseIndex, precentTime, selectedWorkouts.length]);
   useEffect(() => {
     setExerciseResults(completedExercises);
   }, [completedExercises, currentExerciseIndex]);
+  const stopButtonPress = async() => {
+    const token = await AsyncStorage.getItem('token');
+    const email = await AsyncStorage.getItem('email');
+    const url = `http://192.168.0.214:8090/training/add`;
+    console.log("Selected exercises:");
+    console.log(selectedWorkouts);
+    for (const iterator of selectedWorkouts) {
+       fetch(url, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        'exerciseId': iterator.id,
+        'email': email,
+      }),
+    })
+      .then(response => {
+        if (!response.ok) throw new Error('Network response was not ok');
+        Toast.show({
+          type: 'success',
+          visibilityTime: 4000,
+          text1: `Wonderfull training!`,
+          text2: `Let's train! 🏋️‍♂️`,
+        });
+        return response.text();
+      })
+      .catch(err => {
+        console.error(err);
+      });
+    }
+   
+  };
   
   return (
     <View style={styles.container} onLayout={onLayoutRootView}>
@@ -218,7 +251,7 @@ export default function Workout() {
                   fontSize: 30,
                   fontFamily: 'BoldItalic',
                 }}>
-                  {currentKcal.toFixed(1)}
+                  {currentKcal.toFixed(0)}
                 </Text>
               </View>
               <Text style={{
@@ -234,11 +267,17 @@ export default function Workout() {
       </SafeAreaView>
       <View style={styles.playerBottom}> 
         <View style={{
-          alignSelf:'flex-start',
           display: 'flex',
-          flexDirection:'column'
+          flexDirection:'row',
+          width: '100%',
+          justifyContent:'space-between',
         }}>
-          <Text style={{
+          <View style={{
+            display: 'flex',
+            flexDirection:'column',
+            gap: 5
+          }}>
+            <Text style={{
             color: '#06070A',
             fontSize: 15,
             fontFamily: 'Regular',
@@ -252,82 +291,82 @@ export default function Workout() {
           }}>
             {precentTime}%
           </Text>
+          </View>
+          
+          <View style={{
+            display: 'flex',
+            alignItems:'flex-end',
+            flexDirection:'column',
+            gap: 5
+          }}>
+            <Text style={{
+            color: '#06070A',
+            fontSize: 15,
+            fontFamily: 'Regular',
+          }}>
+            {selectedWorkouts[currentExerciseIndex].exerciseTitle}
+          </Text>
+          <Text style={{
+            color: '#06070A',
+            fontSize: 15,
+            fontFamily: 'Bold',
+          }}>
+            {currentExerciseIndex+1}/{selectedWorkouts.length}
+          </Text>
+          </View>
         </View>
  
         <View style={styles.player}> 
-          {currentExerciseIndex > 0 ? (
-            <TouchableOpacity style={{padding: 5}}  onPress={prevExercise}>
-              <Svg xmlns="http://www.w3.org/2000/svg" width={18} height={21} fill="none">
-                <Path
-                  fill="#000"
-                  d="M.5 11.366a1 1 0 0 1 0-1.732L16.25.541a1 1 0 0 1 1.5.866v18.186a1 1 0 0 1-1.5.866L.5 11.366Z"
-                />
+            <TouchableOpacity style={{padding: 5}} >
+              <Svg xmlns="http://www.w3.org/2000/svg" width={18} height={21}>
+                <Path fill="transparent" fillRule="evenodd" d="M0 0h48v1H0z" />
               </Svg>
             </TouchableOpacity>
-          ) : (
-            <Svg xmlns="http://www.w3.org/2000/svg" width={18} height={21} fill="none">
-              <Path
-                fill="#000"
-                fillOpacity={0.4}
-                d="M.5 11.366a1 1 0 0 1 0-1.732L16.25.541a1 1 0 0 1 1.5.866v18.186a1 1 0 0 1-1.5.866L.5 11.366Z"
-              />
-            </Svg>
-          )}
+          
+            {
+            lastExerciseFinished && precentTime === 100  ? (
+              <TouchableOpacity onPress={stopButtonPress}>
+                <Text style={{ color: '#E03326', fontSize: 20, fontFamily: 'Bold' }}>Stop & Save</Text>
+              </TouchableOpacity>
+            ):(
+              <TouchableOpacity onPress={playBtnHndl}>
+                {
+                    isPlay?(
+                  <Svg
+                    width={71}
+                    height={71}
+                    viewBox="0 0 71 71"
+                    fill="none"
+                  >
+                    <Circle cx={35.5} cy={35.5} r={35.5} fill="#06070A" />
+                    <Path
+                      d="M30 26v19M41 26v19"
+                      stroke="#E0FE10"
+                      strokeWidth={3}
+                      strokeLinecap="round"
+                    />
+                  </Svg>
+                  ): (
+                    <Svg width={71} height={71} fill="none">
+                      <Circle cx={35.5} cy={35.5} r={35.5} fill="#06070A" />
+                      <Path
+                        fill="#E0FE10"
+                        d="M46.5 34.634a1 1 0 0 1 0 1.732l-15.75 9.093a1 1 0 0 1-1.5-.866V26.407a1 1 0 0 1 1.5-.866l15.75 9.093Z"
+                      />
+                    </Svg>
+                  )
+                  
+                }
+              </TouchableOpacity>
+            )
+          }
           
  
-          <TouchableOpacity onPress={playBtnHndl}>
-            {
-              isPlay?(
-              <Svg
-                width={71}
-                height={71}
-                viewBox="0 0 71 71"
-                fill="none"
-              >
-                <Circle cx={35.5} cy={35.5} r={35.5} fill="#06070A" />
-                <Path
-                  d="M30 26v19M41 26v19"
-                  stroke="#E0FE10"
-                  strokeWidth={3}
-                  strokeLinecap="round"
-                />
-              </Svg>
-              ): (
-                <Svg width={71} height={71} fill="none">
-                  <Circle cx={35.5} cy={35.5} r={35.5} fill="#06070A" />
-                  <Path
-                    fill="#E0FE10"
-                    d="M46.5 34.634a1 1 0 0 1 0 1.732l-15.75 9.093a1 1 0 0 1-1.5-.866V26.407a1 1 0 0 1 1.5-.866l15.75 9.093Z"
-                  />
-                </Svg>
-              )
-            }
-          </TouchableOpacity>
- 
-          {currentExerciseIndex < selectedWorkouts.length - 1 ? (
-            <TouchableOpacity style={{padding: 5}}  onPress={nextExercise}>
-              <Svg
-                width={18}
-                height={21}
-                viewBox="0 0 18 21"
-                fill="none"
-              >
-                <Path
-                  d="M17.5 9.634a1 1 0 010 1.732L1.75 20.459a1 1 0 01-1.5-.866V1.407A1 1 0 01.75.54L17.5 9.634z"
-                  fill="#000"
-                />
+            <TouchableOpacity style={{padding: 5}} >
+              <Svg xmlns="http://www.w3.org/2000/svg" width={18} height={21}>
+                <Path fill="transparent" fillRule="evenodd" d="M0 0h48v1H0z" />
               </Svg>
             </TouchableOpacity>
-          ) : (
-            <TouchableOpacity style={{padding: 5}}  onPress={() => {
-              completeExercise();
-              console.log(completedExercises);
-            }}>
-              <Text style={{color: '#DF3525', fontSize: 15, fontFamily: 'Bold'}}>
-                STOP
-              </Text>
-            </TouchableOpacity> 
-          )}
         </View>
  
         <View style={styles.progressView}>

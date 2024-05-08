@@ -26,25 +26,6 @@ export default function EditRow() {
     setModalVisible()
     await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
   }
-  const [isLocked, setIsLocked] = useState(false);
-  const [isFocused, setIsFocused] = useState({
-    email: false,
-    password: false,
-    repassword: false,
-  });
-  const [isFilled, setIsFilled] = useState({
-    email: false,
-    password: false,
-    repassword: false,
-  });
-  const [validRepeat, setValidRepeat] = useState(true);
-  const { control, handleSubmit, formState: { errors } } = useForm<IFormInput>({
-    defaultValues: {
-      email: "",
-      password: "",
-      repassword: "",
-    },
-  });
   const [selected, setSelected] = React.useState("");
   const [breakTime, setBreakTime] = React.useState(0);
   const [numOfSet, setNumOfSet] = React.useState(0);
@@ -97,7 +78,7 @@ export default function EditRow() {
             color: '#FFFFFF',
             fontSize: 20,
           }}>Edit Planned Activity</Text>
-          <TouchableOpacity style={{ padding: 10 }} onPress={setModalVisible}>
+          <TouchableOpacity style={{ padding: 10 }} onPress={displayModal}>
             <CloseSvg />
           </TouchableOpacity>
         </View>

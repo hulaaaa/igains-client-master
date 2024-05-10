@@ -1,12 +1,22 @@
-import { StyleSheet, Text, View } from 'react-native'
+import { Image, StyleSheet, Text, View } from 'react-native'
 import React from 'react'
 import { Path, Svg } from 'react-native-svg'
+import moment from 'moment';
+
+const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+
+function formatDate(dateString) {
+  return moment(dateString, "ddd MMM DD HH:mm:ss zzz YYYY").format('DD/MM HH:mm')
+}
+
 export default function RecentActiv({icon, title, kcal, min, time}:any) {
   return (
     <View style={styles.container}>
       <View style={styles.innerDiv}>
-        Image 
-        {icon}
+      <Image
+        style={styles.innerDiv}
+        source={{uri:icon}}
+      />
       </View>
       <View style={{
         flexDirection: 'column',
@@ -37,7 +47,9 @@ export default function RecentActiv({icon, title, kcal, min, time}:any) {
             fontSize: 13,
             color:'rgba(255, 255, 255, 0.5)'
           }}>
-            {time}
+            {
+              formatDate(time)
+            }
           </Text>
         </View>
         <View style={{flexDirection: 'row', alignItems: 'center', gap: 15}}>
@@ -56,6 +68,7 @@ export default function RecentActiv({icon, title, kcal, min, time}:any) {
               {kcal} kcal
             </Text>
           </View>
+
           <View style={{flexDirection: 'row', alignItems: 'flex-end', gap: 7}}>
             <Svg width={13} height={15} fill="none">
               <Path

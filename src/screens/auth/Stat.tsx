@@ -20,8 +20,10 @@ import RunningIcon from "../../../assets/svg/SportIcon/RunningIcon";
 import SwimmingIcon from "../../../assets/svg/SportIcon/SwimmingIcon";
 import GymIcon from "../../../assets/svg/SportIcon/GymIcon";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import moment from "moment";
 
 SplashScreen.preventAutoHideAsync();
+
 
 export default function Stat() {
   const [refreshing, setRefreshing] = useState(false);
@@ -84,7 +86,6 @@ export default function Stat() {
       console.error('There was a problem with your fetch operation:', error);
     });
   }
-
   const createLatestTrain = (user) => {
     if(user){
       const reformattedData = user.map(item => ({
@@ -109,19 +110,35 @@ export default function Stat() {
     }, 800);
     createLatestTrain(userInfo.latestTrainings);
   };
-  
-  const navigation = useNavigation();
+  const formatHourCal = (type,data) => {
+    if(type=='cal'){
+      let total = 0
+      if(data){
+        for (let index = 0; index < data.length; index++) {
+          total+=data[index].exercise.exerciseKcal
+        }
+      }
+      return total
+    }
+    if(type=='count'){
+      return data&& data.length
+    }
+    if(type=='hour'){
+      let total = 0
+      if(data){
+        for (let index = 0; index < data.length; index++) {
+          total+=data[index].exercise.exerciseDuration
+        }
+      }
+      return total/60>= 0.1 ? (total/60).toFixed(1):(total/60).toFixed(0)
+    }
+  }
+  const navigation = useNavigation()
 
   useEffect(()=>{
     onRefresh()
   }, [])
-  // useEffect(()=>{
-  //   createLatestTrain(userInfo.latestTrainings);
-  // }, [userInfo])
-  useEffect(()=>{
-    console.log(latTrain);
-    
-  }, [latTrain])
+
   return (
     <View style={styles.container} onLayout={onLayoutRootView}>
       <SafeAreaView >
@@ -164,9 +181,7 @@ export default function Stat() {
               paddingHorizontal: 15,
               paddingVertical: 10,}}>
               <Text style={activeToday==='Weekly'?{ color: '#1E1E1E', fontFamily: 'Light', fontSize: 14 }:{color: '#FFFFFF', fontFamily: 'Light', fontSize: 14}}>Weekly</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity onPress={()=>{setActiveToday('Monthly'),Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)}} style={activeToday==='Monthly'?{
+            </TouchableOpacity>            <TouchableOpacity onPress={()=>{setActiveToday('Monthly'),Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)}} style={activeToday==='Monthly'?{
               backgroundColor: '#FFFFFF',
               borderColor: '#272727',
               borderWidth: 1,
@@ -210,7 +225,7 @@ export default function Stat() {
                   fontSize: 20,
                   color: 'white',
                 }}>
-                  1.105
+                  {formatHourCal('cal', userInfo.latestTrainings)}
                 </Text>
                 <Text style={{
                   fontFamily: 'Light',
@@ -230,7 +245,7 @@ export default function Stat() {
                   fontSize: 20,
                   color: 'white',
                 }}>
-                  7,2
+                  {formatHourCal('hour', userInfo.latestTrainings)}
                 </Text>
                 <Text style={{
                   fontFamily: 'Light',
@@ -240,9 +255,7 @@ export default function Stat() {
                   HOURS SPEND
                 </Text>
               </View>
-            </View>
-
-            <View style={{backgroundColor: '#17181B',width: '32%', aspectRatio: 1/1,justifyContent:'center',borderRadius: 10,alignItems:'center', gap: 12}}>
+            </View>            <View style={{backgroundColor: '#17181B',width: '32%', aspectRatio: 1/1,justifyContent:'center',borderRadius: 10,alignItems:'center', gap: 12}}>
               <TotalTrainIcon />
               <View style={{alignItems:'center', gap: 5}}>
                 <Text style={{
@@ -250,7 +263,7 @@ export default function Stat() {
                   fontSize: 20,
                   color: 'white',
                 }}>
-                  34
+                  {formatHourCal('count', userInfo.latestTrainings)}
                 </Text>
                 <Text style={{
                   fontFamily: 'Light',
@@ -361,9 +374,8 @@ export default function Stat() {
             </Text>
             <TouchableOpacity style={{padding: 15,paddingRight: 0}}>
               <Text style={{
-              fontFamily:'Regular',
-              fontSize: 12,
-              color: 'rgba(255,255,255,0.5)',
+              fontFamily:'Regular',              fontSize: 12,
+              color: 'transparent',
             }}>
               View All
             </Text>
@@ -377,9 +389,8 @@ export default function Stat() {
           }}>
             {
               latTrain.map((item)=> (
-                <RecentActiv icon={<RunningIcon/>} title={item.exerciseTitle} kcal={item.exerciseKcal} min={item.exerciseDuration} time="Sun, 06:00 - 08:00"/>
-              )
-              )
+                <RecentActiv icon={item.exerciseImage} title={item.exerciseTitle} kcal={item.exerciseKcal} min={item.exerciseDuration} time={item.trainingDate}/>
+              ))
             }
           </View>
         </ScrollView>

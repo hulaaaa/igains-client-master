@@ -1,6 +1,6 @@
 import { BarChart } from "react-native-gifted-charts";
 import { Alert, Dimensions, RefreshControl, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import Tabs from '../../components/Tabs'
 import { useCallback } from 'react';
 import { useFonts } from 'expo-font';
@@ -19,6 +19,7 @@ import RecentActiv from "../../components/RecentActiv";
 import RunningIcon from "../../../assets/svg/SportIcon/RunningIcon";
 import SwimmingIcon from "../../../assets/svg/SportIcon/SwimmingIcon";
 import GymIcon from "../../../assets/svg/SportIcon/GymIcon";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -28,14 +29,15 @@ export default function Stat() {
   const activeColor = '#DFFD10'
   const futureColor = 'white'
   let barData = [
-    {value: 250, label: 'Mon', fontColor: unActiveColor},
-    {value: 500, label: 'Tue', frontColor: unActiveColor},
-    {value: 745, label: 'Wed', frontColor: unActiveColor},
-    {value: 320, label: 'Thu', frontColor: activeColor},
-    {value: 50, label: 'Fri', frontColor: futureColor},
-    {value: 50, label: 'Sat', frontColor: futureColor},
-    {value: 50, label: 'Sun', frontColor: futureColor},
+    { value: 250, label: 'Mon', fontColor: unActiveColor },
+    { value: 500, label: 'Tue', fontColor: unActiveColor },
+    { value: 745, label: 'Wed', fontColor: unActiveColor },
+    { value: 320, label: 'Thu', fontColor: activeColor },
+    { value: 50, label: 'Fri', fontColor: futureColor },
+    { value: 50, label: 'Sat', fontColor: futureColor },
+    { value: 50, label: 'Sun', fontColor: futureColor },
   ];
+  
   const [chartData, setChartData] = useState(barData)
   const [activeToday, setActiveToday] = useState('Today')
   const [fontsLoaded, fontError] = useFonts({
@@ -54,16 +56,72 @@ export default function Stat() {
   if (!fontsLoaded && !fontError) {
     return null;
   }
+  const [userInfo, setUserInfo] = useState([])
+  const [latTrain, setLatTrain] = useState([])
+
+  async function getUser () {
+    const token = await AsyncStorage.getItem('token')
+    const email = await AsyncStorage.getItem('email')
+    const url = `http://192.168.0.214:8090/api/users/get/${email}`;
+
+    fetch(url, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      return response.json();
+    })
+    .then(data => {
+      setUserInfo(data)
+    })
+    .catch(error => {      
+      console.log(token);
+      console.error('There was a problem with your fetch operation:', error);
+    });
+  }
+
+  const createLatestTrain = (user) => {
+    if(user){
+      const reformattedData = user.map(item => ({
+        id: item.id,
+        trainingDate: item.trainingDate,
+        trainingTime: item.trainingTime,
+        exerciseCategory: item.exercise.exerciseCategory,
+        exerciseDuration: item.exercise.exerciseDuration,
+        exerciseImage: item.exercise.exerciseImage,
+        exerciseKcal: item.exercise.exerciseKcal,
+        exerciseSelected: item.exercise.exerciseSelected,
+        exerciseTitle: item.exercise.exerciseTitle
+      }));
+      setLatTrain(reformattedData)
+    }
+  }
   const onRefresh = () => {
     setRefreshing(true);
+    getUser()
     setTimeout(() => {
       setRefreshing(false);
     }, 800);
+    createLatestTrain(userInfo.latestTrainings);
   };
   
   const navigation = useNavigation();
 
-
+  useEffect(()=>{
+    onRefresh()
+  }, [])
+  // useEffect(()=>{
+  //   createLatestTrain(userInfo.latestTrainings);
+  // }, [userInfo])
+  useEffect(()=>{
+    console.log(latTrain);
+    
+  }, [latTrain])
   return (
     <View style={styles.container} onLayout={onLayoutRootView}>
       <SafeAreaView >
@@ -317,10 +375,12 @@ export default function Stat() {
             gap: 10,
             marginBottom: 70,
           }}>
-            <RecentActiv icon={<RunningIcon/>} title="Running" kcal={450} min={120} time="Sun, 06:00 - 08:00"/>
-            <RecentActiv icon={<SwimmingIcon/>} title="Swimming " kcal={123} min={30} time="Sun, 06:00 - 08:00"/>
-            <RecentActiv icon={<GymIcon/>} title="Gym" kcal={354} min={120} time="Sun, 06:00 - 08:00"/>
-            <RecentActiv icon={<RunningIcon/>} title="Running" kcal={120} min={60} time="Mon, 06:00 - 08:00"/>
+            {
+              latTrain.map((item)=> (
+                <RecentActiv icon={<RunningIcon/>} title={item.exerciseTitle} kcal={item.exerciseKcal} min={item.exerciseDuration} time="Sun, 06:00 - 08:00"/>
+              )
+              )
+            }
           </View>
         </ScrollView>
       </SafeAreaView>

@@ -5,6 +5,7 @@ export default function RecentActiv({icon, title, kcal, min, time}:any) {
   return (
     <View style={styles.container}>
       <View style={styles.innerDiv}>
+        Image 
         {icon}
       </View>
       <View style={{

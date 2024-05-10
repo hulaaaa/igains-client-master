@@ -186,6 +186,8 @@ export default function Workout() {
     console.log("Selected exercises:");
     console.log(selectedWorkouts);
     for (const iterator of selectedWorkouts) {
+      console.log(iterator.id);
+      
        fetch(url, {
       method: 'POST',
       headers: {
@@ -205,6 +207,7 @@ export default function Workout() {
           text1: `Wonderfull training!`,
           text2: `Let's train! 🏋️‍♂️`,
         });
+        navigation.navigate('Home')
         return response.text();
       })
       .catch(err => {

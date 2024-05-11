@@ -43,9 +43,9 @@ export default function SplashStart() {
         </View>
 
         <View style={styles.mainContantDiv}>
-          <View>
+          {/* <View>
             <SplashStories />
-          </View>
+          </View> */}
           <View style={styles.btnDiv}>
             <TouchableOpacity onPress={() => {
               Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)

@@ -13,10 +13,10 @@ export default function RecentActiv({icon, title, kcal, min, time}:any) {
   return (
     <View style={styles.container}>
       <View style={styles.innerDiv}>
-      <Image
-        style={styles.innerDiv}
-        source={{uri:icon}}
-      />
+        <Image
+          style={styles.innerDiv}
+          source={{uri:icon}}
+        />
       </View>
       <View style={{
         flexDirection: 'column',
@@ -47,9 +47,7 @@ export default function RecentActiv({icon, title, kcal, min, time}:any) {
             fontSize: 13,
             color:'rgba(255, 255, 255, 0.5)'
           }}>
-            {
-              formatDate(time)
-            }
+            {formatDate(time)}
           </Text>
         </View>
         <View style={{flexDirection: 'row', alignItems: 'center', gap: 15}}>
@@ -68,7 +66,6 @@ export default function RecentActiv({icon, title, kcal, min, time}:any) {
               {kcal} kcal
             </Text>
           </View>
-
           <View style={{flexDirection: 'row', alignItems: 'flex-end', gap: 7}}>
             <Svg width={13} height={15} fill="none">
               <Path

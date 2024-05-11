@@ -24,9 +24,7 @@ import moment from "moment";
 
 SplashScreen.preventAutoHideAsync();
 
-
 export default function Stat() {
-  const [refreshing, setRefreshing] = useState(false);
   const unActiveColor = '#4F4F4F'
   const activeColor = '#DFFD10'
   const futureColor = 'white'
@@ -37,7 +35,7 @@ export default function Stat() {
     { value: 320, label: 'Thu', fontColor: activeColor },
     { value: 50, label: 'Fri', fontColor: futureColor },
     { value: 50, label: 'Sat', fontColor: futureColor },
-    { value: 50, label: 'Sun', fontColor: futureColor },
+    { value: 50, label: 'Sun', fontColor: futureColor }
   ];
   
   const [chartData, setChartData] = useState(barData)
@@ -58,34 +56,36 @@ export default function Stat() {
   if (!fontsLoaded && !fontError) {
     return null;
   }
+  const [refreshing, setRefreshing] = useState(false);
+  const navigation = useNavigation();
   const [userInfo, setUserInfo] = useState([])
   const [latTrain, setLatTrain] = useState([])
 
-  async function getUser () {
-    const token = await AsyncStorage.getItem('token')
-    const email = await AsyncStorage.getItem('email')
-    const url = `http://192.168.0.214:8090/api/users/get/${email}`;
+  async function getUser() {
+    try {
+      const token = await AsyncStorage.getItem('token');
+      const email = await AsyncStorage.getItem('email');
+      const url = `http://192.168.0.214:8090/api/users/get/${email}`;
 
-    fetch(url, {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
-    })
-    .then(response => {
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
       if (!response.ok) {
         throw new Error('Network response was not ok');
       }
-      return response.json();
-    })
-    .then(data => {
-      setUserInfo(data)
-    })
-    .catch(error => {      
-      console.log(token);
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
       console.error('There was a problem with your fetch operation:', error);
-    });
+      return null;
+    }
   }
+  
   const createLatestTrain = (user) => {
     if(user){
       const reformattedData = user.map(item => ({
@@ -102,14 +102,37 @@ export default function Stat() {
       setLatTrain(reformattedData)
     }
   }
-  const onRefresh = () => {
-    setRefreshing(true);
-    getUser()
-    setTimeout(() => {
-      setRefreshing(false);
-    }, 800);
-    createLatestTrain(userInfo.latestTrainings);
-  };
+  
+  const filterDataByPeriod = (data, period) => {
+    const currentDate = new Date();
+    switch(period) {
+      case 'Today':
+        return data.filter(item => {
+          return  moment(item.trainingDate, "ddd MMM DD HH:mm:ss zzz YYYY").format('ddd MMM DD YYYY') === currentDate.toDateString();
+        });
+      case 'Weekly':
+        const oneWeekAgo = new Date(currentDate.getTime() - 7 * 24 * 60 * 60 * 1000);
+        return data.filter(item => {
+          const options = {
+            weekday: 'short',
+            month: 'short',
+            day: '2-digit',
+            year: 'numeric'
+          };
+          const formattedDateString = new Intl.DateTimeFormat('en-US', options).format(oneWeekAgo);
+          return  moment(item.trainingDate, "ddd MMM DD HH:mm:ss zzz YYYY").format('ddd MMM DD YYYY') >= formattedDateString;
+        });
+      case 'Monthly':
+        const oneMonthAgo = new Date(currentDate.getTime() - 30 * 24 * 60 * 60 * 1000);
+        return data.filter(item => {
+          return moment(item.trainingDate, "ddd MMM DD HH:mm:ss zzz YYYY").format('ddd MMM DD YYYY') >= moment(oneMonthAgo).format('ddd MMM DD YYYY');
+        });
+      case 'All time':
+        return data;
+      default:
+        return [];
+    }
+  }
   const formatHourCal = (type,data) => {
     if(type=='cal'){
       let total = 0
@@ -133,19 +156,43 @@ export default function Stat() {
       return total/60>= 0.1 ? (total/60).toFixed(1):(total/60).toFixed(0)
     }
   }
-  const navigation = useNavigation()
-
+  const filteredData = userInfo.latestTrainings ? filterDataByPeriod(userInfo.latestTrainings, activeToday) : [];
+  
+  const totalCalories = formatHourCal('cal', filteredData);
+  const totalHours = formatHourCal('hour', filteredData);
+  const totalTrainings = formatHourCal('count', filteredData);
+  const onRefresh = async () => {
+    setRefreshing(true);
+    const userData = await getUser();
+    if (userData) {
+      setUserInfo(userData);
+      createLatestTrain(filteredData);
+    }
+    setRefreshing(false);
+  };
+  useEffect(() => {
+    const fetchData = async () => {
+      setRefreshing(true); 
+      const userData = await getUser();
+      if (userData) {
+        setUserInfo(userData);
+        createLatestTrain(filteredData);
+      }
+      setRefreshing(false);
+    };
+    fetchData(); 
+  }, []);
   useEffect(()=>{
     onRefresh()
-  }, [])
-
+  },[activeToday])
+  
   return (
     <View style={styles.container} onLayout={onLayoutRootView}>
       <SafeAreaView >
         <ScrollView refreshControl={<RefreshControl tintColor={'#E0FE10'} refreshing={refreshing} onRefresh={onRefresh}/>} showsVerticalScrollIndicator={false}>
-          
           <View style={styles.header_search}>
-            <HeaderText first="Statistics" second={<BellAlertIcon/>} />
+            {/* <HeaderText first="Statistics" second={<BellAlertIcon/>} /> */}
+            <HeaderText first="Statistics" second={null} />
           </View>
  
           <View style={styles.divtasks}>
@@ -181,7 +228,9 @@ export default function Stat() {
               paddingHorizontal: 15,
               paddingVertical: 10,}}>
               <Text style={activeToday==='Weekly'?{ color: '#1E1E1E', fontFamily: 'Light', fontSize: 14 }:{color: '#FFFFFF', fontFamily: 'Light', fontSize: 14}}>Weekly</Text>
-            </TouchableOpacity>            <TouchableOpacity onPress={()=>{setActiveToday('Monthly'),Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)}} style={activeToday==='Monthly'?{
+            </TouchableOpacity>
+
+            <TouchableOpacity onPress={()=>{setActiveToday('Monthly'),Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)}} style={activeToday==='Monthly'?{
               backgroundColor: '#FFFFFF',
               borderColor: '#272727',
               borderWidth: 1,
@@ -225,7 +274,7 @@ export default function Stat() {
                   fontSize: 20,
                   color: 'white',
                 }}>
-                  {formatHourCal('cal', userInfo.latestTrainings)}
+                  {totalCalories}
                 </Text>
                 <Text style={{
                   fontFamily: 'Light',
@@ -245,7 +294,7 @@ export default function Stat() {
                   fontSize: 20,
                   color: 'white',
                 }}>
-                  {formatHourCal('hour', userInfo.latestTrainings)}
+                  {totalHours}
                 </Text>
                 <Text style={{
                   fontFamily: 'Light',
@@ -255,7 +304,9 @@ export default function Stat() {
                   HOURS SPEND
                 </Text>
               </View>
-            </View>            <View style={{backgroundColor: '#17181B',width: '32%', aspectRatio: 1/1,justifyContent:'center',borderRadius: 10,alignItems:'center', gap: 12}}>
+            </View>
+
+            <View style={{backgroundColor: '#17181B',width: '32%', aspectRatio: 1/1,justifyContent:'center',borderRadius: 10,alignItems:'center', gap: 12}}>
               <TotalTrainIcon />
               <View style={{alignItems:'center', gap: 5}}>
                 <Text style={{
@@ -263,7 +314,7 @@ export default function Stat() {
                   fontSize: 20,
                   color: 'white',
                 }}>
-                  {formatHourCal('count', userInfo.latestTrainings)}
+                  {totalTrainings}
                 </Text>
                 <Text style={{
                   fontFamily: 'Light',
@@ -276,7 +327,7 @@ export default function Stat() {
             </View>
           </View>
  
-          <View style={styles.chartDiv}>
+          {/* <View style={styles.chartDiv}>
             <View style={{alignItems: 'center', width:'100%',flexDirection:'row',justifyContent:'space-between'}}>
               <Text style={{
                 fontFamily:'Bold',
@@ -303,30 +354,31 @@ export default function Stat() {
               </View>
             </View>
             <View>
-              <BarChart
-                onPress={(item:any) => {
-                  Alert.alert('BarChart', JSON.stringify(item.frontColor))
-                }}
-                disablePress={false}
-                hideYAxisText={true}
-                barWidth={30}
-                yAxisTextStyle={{color: 'transparent', fontFamily: 'Light', fontSize: 1}}
-                xAxisLabelTextStyle={{color: 'white', fontFamily: 'Light', fontSize: 12}}
-                color={'white'}
-                barBorderRadius={6}
-                isAnimated
-                maxValue={1000}
-                frontColor="#4F4F4F"
-                data={chartData}
-                hideRules
-                initialSpacing={0}
-                spacing={12}
-                height={120}
-                yAxisThickness={0}
-                xAxisThickness={0}
-              />
+            <BarChart
+              onPress={(item:any) => {
+                Alert.alert('BarChart', JSON.stringify(item.frontColor))
+              }}
+              disablePress={false}
+              hideYAxisText={true}
+              barWidth={30}
+              yAxisTextStyle={{color: 'transparent', fontFamily: 'Light', fontSize: 1}}
+              xAxisLabelTextStyle={{color: 'white', fontFamily: 'Light', fontSize: 12}}
+              color={'white'}
+              barBorderRadius={6}
+              isAnimated
+              maxValue={1000}
+              frontColor="#4F4F4F"
+              data={barData} 
+              hideRules
+              initialSpacing={0}
+              spacing={12}
+              height={120}
+              yAxisThickness={0}
+              xAxisThickness={0}
+            />
+
             </View>
-          </View>
+          </View> */}
  
           <TouchableOpacity 
             onPress={()=>{Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium),navigation.navigate("Planer") }}
@@ -374,7 +426,8 @@ export default function Stat() {
             </Text>
             <TouchableOpacity style={{padding: 15,paddingRight: 0}}>
               <Text style={{
-              fontFamily:'Regular',              fontSize: 12,
+              fontFamily:'Regular',
+              fontSize: 12,
               color: 'transparent',
             }}>
               View All
@@ -388,8 +441,8 @@ export default function Stat() {
             marginBottom: 70,
           }}>
             {
-              latTrain.map((item)=> (
-                <RecentActiv icon={item.exerciseImage} title={item.exerciseTitle} kcal={item.exerciseKcal} min={item.exerciseDuration} time={item.trainingDate}/>
+              latTrain?.map((item)=> (
+                <RecentActiv icon={item.exerciseImage} title={item.exerciseTitle} kcal={item.exerciseKcal} min={item.exerciseDuration} time={item.trainingDate}/>              
               ))
             }
           </View>

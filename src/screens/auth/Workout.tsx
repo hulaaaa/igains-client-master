@@ -266,7 +266,7 @@ export default function Workout() {
               </Text>
             </View>
         </View>
-        <Image source={require('../../../assets/images/app/workoutImg.png')} style={styles.image}/>
+        <Image source={{uri: selectedWorkouts[currentExerciseIndex].exerciseImage}} style={styles.image}/>
       </SafeAreaView>
       <View style={styles.playerBottom}> 
         <View style={{

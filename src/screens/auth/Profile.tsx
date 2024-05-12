@@ -109,8 +109,9 @@ export default function Profile({route}) {
   return (
     <View style={styles.container} onLayout={onLayoutRootView}>
       <SafeAreaView > 
-        <View style={styles.header_search}>
-          <HeaderText first="Profile" second={<DotThreeIcon/>} />
+        <View style={styles.header_search}>          
+          <HeaderText first="Profile" second={null} />
+          {/* <HeaderText first="Profile" second={<DotThreeIcon/>} /> */}
         </View>
         <ScrollView 
         refreshControl={

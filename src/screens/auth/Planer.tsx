@@ -243,66 +243,95 @@ export default function Planer() {
 
   const setOpenRow = useStore(state => state.voidOpenedRow);
 
+  // const renderHiddenItem = (data, rowMap) => (
+  //   <View style={styles.rowBack}>
+  //       <Text style={{color: 'transparent'}}>Left</Text>
+  //       DONE BTN
+  //       <TouchableOpacity
+  //           style={[styles.backRightBtn, styles.backRightBtnLeft]}
+  //           onPress={() => closeRow(rowMap, data.item.key)}
+  //       >
+  //           <Svg width={16} height={13} fill="none">
+  //           <Path
+  //             stroke="#64C747"
+  //             strokeLinecap="round"
+  //             strokeLinejoin="round"
+  //             strokeWidth={2}
+  //             d="m1 7.527 4 4.21 9.5-10"
+  //           />
+  //         </Svg>
+  //       </TouchableOpacity>
+
+  //       DELETE BTN
+  //       <TouchableOpacity
+  //           style={[styles.backRightBtn, styles.backRightBtnRight]}
+  //           onPress={()=>{
+  //             setOpenRow(data)
+  //             setModalVisibleDelete(!modalVisibleDelete)
+  //           }}
+  //       >
+  //           <Svg width={19} height={20} fill="none">
+  //             <Path
+  //               stroke="#DF3525"
+  //               strokeLinecap="round"
+  //               strokeLinejoin="round"
+  //               strokeWidth={1.5}
+  //               d="M1.326 5.817c5.28-2.479 11.067-2.479 16.348 0"
+  //             />
+  //             <Path
+  //               stroke="#DF3525"
+  //               strokeLinecap="round"
+  //               strokeLinejoin="round"
+  //               strokeWidth={1.5}
+  //               d="M5.868 3.958c0-.74.383-1.45 1.064-1.972.681-.523 1.606-.817 2.569-.817.963 0 1.888.294 2.569.817.681.523 1.064 1.232 1.064 1.972M9.5 10.465v4.648M15.857 7.676l-.609 7.437a4.165 4.165 0 0 1-1.276 2.623 3.984 3.984 0 0 1-2.656 1.095H7.683a3.984 3.984 0 0 1-2.656-1.095 4.164 4.164 0 0 1-1.277-2.623l-.608-7.437"
+  //             />
+  //           </Svg>
+  //       </TouchableOpacity>
+
+  //       EDIT BTN
+  //       <TouchableOpacity
+  //           style={[styles.backRightBtn, styles.backDelBtnRight]}
+  //           onPress={() => setModalVisibleEdit(!modalVisibleEdit)}
+
+  //       >
+  //           <Svg width={17} height={18} fill="none">
+  //             <Path
+  //               fill="#fff"
+  //               fillOpacity={0.5}
+  //               fillRule="evenodd"
+  //               d="M16.115.938a2.462 2.462 0 0 0-3.576 0L11.124 2.41 4.46 9.332a.885.885 0 0 0-.222.406l-.843 3.503a.899.899 0 0 0 .222.831c.21.218.513.305.8.23l3.371-.875a.836.836 0 0 0 .392-.23l6.614-6.872 1.464-1.522a2.7 2.7 0 0 0 0-3.714l-.144-.15ZM13.73 2.177a.82.82 0 0 1 1.192 0l.145.15a.9.9 0 0 1 0 1.238l-.857.89L12.9 3.04l.83-.863Zm-2.023 2.102 1.31 1.415-5.864 6.093-1.782.463.446-1.851 5.89-6.12ZM1.686 5.573c0-.484.377-.876.842-.876h4.214c.466 0 .843-.392.843-.875 0-.484-.377-.876-.843-.876H2.528C1.132 2.946 0 4.122 0 5.573v9.631c0 1.451 1.132 2.627 2.528 2.627h9.27c1.397 0 2.53-1.176 2.53-2.627v-4.378c0-.483-.378-.875-.844-.875-.465 0-.842.392-.842.875v4.378c0 .484-.378.876-.843.876h-9.27c-.466 0-.843-.392-.843-.875V5.572Z"
+  //               clipRule="evenodd"
+  //             />
+  //           </Svg>
+  //       </TouchableOpacity>
+  //   </View>
+  // );
   const renderHiddenItem = (data, rowMap) => (
     <View style={styles.rowBack}>
-        <Text style={{color: 'transparent'}}>Left</Text>
-        {/* DONE BTN */}
-        {/* <TouchableOpacity
-            style={[styles.backRightBtn, styles.backRightBtnLeft]}
-            onPress={() => closeRow(rowMap, data.item.key)}
-        >
-            <Svg width={16} height={13} fill="none">
-            <Path
-              stroke="#64C747"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="m1 7.527 4 4.21 9.5-10"
-            />
-          </Svg>
-        </TouchableOpacity> */}
-
-        {/* DELETE BTN */}
-        <TouchableOpacity
-            style={[styles.backRightBtn, styles.backRightBtnRight]}
-            onPress={()=>{
-              setOpenRow(data)
-              setModalVisibleDelete(!modalVisibleDelete)
-            }}
-        >
-            <Svg width={19} height={20} fill="none">
-              <Path
-                stroke="#DF3525"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={1.5}
-                d="M1.326 5.817c5.28-2.479 11.067-2.479 16.348 0"
-              />
-              <Path
-                stroke="#DF3525"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={1.5}
-                d="M5.868 3.958c0-.74.383-1.45 1.064-1.972.681-.523 1.606-.817 2.569-.817.963 0 1.888.294 2.569.817.681.523 1.064 1.232 1.064 1.972M9.5 10.465v4.648M15.857 7.676l-.609 7.437a4.165 4.165 0 0 1-1.276 2.623 3.984 3.984 0 0 1-2.656 1.095H7.683a3.984 3.984 0 0 1-2.656-1.095 4.164 4.164 0 0 1-1.277-2.623l-.608-7.437"
-              />
-            </Svg>
-        </TouchableOpacity>
-
-        {/* EDIT BTN */}
-        <TouchableOpacity
-            style={[styles.backRightBtn, styles.backDelBtnRight]}
-            onPress={()=>setModalVisibleEdit(!modalVisibleEdit)}
-        >
-            <Svg width={17} height={18} fill="none">
-              <Path
-                fill="#fff"
-                fillOpacity={0.5}
-                fillRule="evenodd"
-                d="M16.115.938a2.462 2.462 0 0 0-3.576 0L11.124 2.41 4.46 9.332a.885.885 0 0 0-.222.406l-.843 3.503a.899.899 0 0 0 .222.831c.21.218.513.305.8.23l3.371-.875a.836.836 0 0 0 .392-.23l6.614-6.872 1.464-1.522a2.7 2.7 0 0 0 0-3.714l-.144-.15ZM13.73 2.177a.82.82 0 0 1 1.192 0l.145.15a.9.9 0 0 1 0 1.238l-.857.89L12.9 3.04l.83-.863Zm-2.023 2.102 1.31 1.415-5.864 6.093-1.782.463.446-1.851 5.89-6.12ZM1.686 5.573c0-.484.377-.876.842-.876h4.214c.466 0 .843-.392.843-.875 0-.484-.377-.876-.843-.876H2.528C1.132 2.946 0 4.122 0 5.573v9.631c0 1.451 1.132 2.627 2.528 2.627h9.27c1.397 0 2.53-1.176 2.53-2.627v-4.378c0-.483-.378-.875-.844-.875-.465 0-.842.392-.842.875v4.378c0 .484-.378.876-.843.876h-9.27c-.466 0-.843-.392-.843-.875V5.572Z"
-                clipRule="evenodd"
-              />
-            </Svg>
-        </TouchableOpacity>
+      <TouchableOpacity
+        style={[styles.backRightBtn, styles.backRightBtnRight]}
+        onPress={() => {
+          setOpenRow(data);
+          setModalVisibleDelete(!modalVisibleDelete);
+        }}
+      >
+        <Svg width={19} height={20} fill="none">
+          <Path
+            stroke="#DF3525"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={1.5}
+            d="M1.326 5.817c5.28-2.479 11.067-2.479 16.348 0"
+          />
+          <Path
+            stroke="#DF3525"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={1.5}
+            d="M5.868 3.958c0-.74.383-1.45 1.064-1.972.681-.523 1.606-.817 2.569-.817.963 0 1.888.294 2.569.817.681.523 1.064 1.232 1.064 1.972M9.5 10.465v4.648M15.857 7.676l-.609 7.437a4.165 4.165 0 0 1-1.276 2.623 3.984 3.984 0 0 1-2.656 1.095H7.683a3.984 3.984 0 0 1-2.656-1.095 4.164 4.164 0 0 1-1.277-2.623l-.608-7.437"
+          />
+        </Svg>
+      </TouchableOpacity>
     </View>
   );
   
@@ -573,7 +602,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     position: 'absolute',
     top: 0,
-    width: 50,
+    width: 155,
   },
   backRightBtnLeft: {
     backgroundColor: '#1F3D18',

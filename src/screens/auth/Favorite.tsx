@@ -84,13 +84,18 @@ export default function Favorite() {
       const updatedWorkoutItem = { ...workoutItem };
       updatedWorkoutItem.favorites = updatedWorkoutItem.favorites.filter(favorite => favorite.exercise.id !== exercise.id);
       setWorkoutItem(updatedWorkoutItem);
-  
       Toast.show({
         type: 'success',
         visibilityTime: 4000,
         text1: `Successful delete exercises!`,
         text2: `Let's train! 🏋️‍♂️`
       });
+  
+      setRefreshing(true);
+      setTimeout(() => {
+        setRefreshing(false);
+      }, 1000);
+  
       return response.text();
     })
     .catch(err => {
@@ -104,6 +109,9 @@ export default function Favorite() {
     });
   }, [workoutItem]);
   
+  useEffect(() => {
+    getFavoriteExercises();
+  }, [workoutItem]);
   
 
   const onRefresh = () => {
@@ -119,9 +127,6 @@ export default function Favorite() {
     onRefresh();
   }, []);
   
-  useEffect(() => {
-    getFavoriteExercises();
-  }, [workoutItem]);
 
   return (
     <View style={styles.container} onLayout={onLayoutRootView}>
@@ -154,8 +159,7 @@ export default function Favorite() {
               alignItems: 'center',
               width: Dimensions.get('window').width - 50,
             }}>
-              {
-                
+              {favoriteExercises.length > 0 ? (
                 favoriteExercises.map((exercise, index) => (
                     <View key={index} style={{
                       backgroundColor: '#17181B',
@@ -262,7 +266,11 @@ export default function Favorite() {
                       <Image style={{width: '30%', height: 80, borderRadius:12}} source={{uri: exercise.exerciseImage}} />
                     </View>
                   ))
-              }
+                ) : (
+                  <Text style={{ color: '#FFFFFF', fontSize: 16 }}>
+                    No favorite exercises
+                  </Text>
+                )}
             </View>
         </ScrollView>
       </SafeAreaView>

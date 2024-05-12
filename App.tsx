@@ -6,6 +6,9 @@ import { useEffect, useState } from 'react';
 import { View } from 'react-native';
 import Toast, { BaseToast, ErrorToast } from 'react-native-toast-message';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { jwtDecode } from "jwt-decode";
+
+
 
 const toastConfig = {
   success: (props: any) => (
@@ -41,14 +44,21 @@ const toastConfig = {
 export default function App() {
   const [isAuth, setIsAuth] = useState(false);
 
-  useEffect(() => {
-    SplashScreen.preventAutoHideAsync();
-    checkAuthStatus();
-  }, []);
-
   const checkAuthStatus = async () => {
     const token = await AsyncStorage.getItem('token');
-    setIsAuth(token !== null);
+    if (token) {
+      const decodedToken = jwtDecode(token);
+      const currentTime = Date.now() / 1000;
+      if (decodedToken.exp > currentTime) {
+        setIsAuth(true);
+      } else {
+        setIsAuth(false);
+        AsyncStorage.removeItem('email');
+        AsyncStorage.removeItem('token');
+      }
+    } else {
+      setIsAuth(false);
+    }
     SplashScreen.hideAsync();
   };
 
@@ -58,10 +68,14 @@ export default function App() {
 
   const handleLogout = () => {
     setIsAuth(false);
-    AsyncStorage.removeItem('email'); 
-    AsyncStorage.removeItem('token'); 
+    AsyncStorage.removeItem('email');
+    AsyncStorage.removeItem('token');
   };
 
+  useEffect(() => {
+    SplashScreen.preventAutoHideAsync();
+    checkAuthStatus();
+  }, []);
   return (
     <NavigationContainer>
       {isAuth ? <MainRouterStack handleLogout={handleLogout} /> : <StartRouterStack handleLogin={handleLogin} />}

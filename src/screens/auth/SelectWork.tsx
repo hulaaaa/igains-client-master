@@ -7,7 +7,7 @@ import { Path, Svg } from 'react-native-svg';
 SplashScreen.preventAutoHideAsync();
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { useStore } from '../../services/ZustandModalPassword';
-import { Workout } from '../../services/ZustandModalPassword'; 
+import { Workout } from '../../services/ZustandModalPassword';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Toast from 'react-native-toast-message';
 
@@ -34,26 +34,26 @@ export default function SelectWork() {
   const navigation = useNavigation<any>();
   const voidSelectWorkout = useStore((state) => state.voidSelectWorkout);
 
- 
+
   const [allEx, setAllEx] = useState([{}])
   const [favEx, setFavEx] = useState([{}])
 
-  const getAllExercises =  () => {
+  const getAllExercises = () => {
     const url = `http://192.168.0.214:8090/exercise/getall`
     fetch(url)
-    .then(response => {
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
-      return response.json();
-    })
-    .then(data => {
-      const nData = []
-      for (const iterator of data) {
-        iterator.exerciseCategory == category?nData.push(iterator):null
-      }
-      setAllEx(nData)
-    })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        return response.json();
+      })
+      .then(data => {
+        const nData = []
+        for (const iterator of data) {
+          iterator.exerciseCategory == category ? nData.push(iterator) : null
+        }
+        setAllEx(nData)
+      })
   };
   const onRefresh = () => {
     setRefreshing(true);
@@ -62,28 +62,28 @@ export default function SelectWork() {
       setRefreshing(false);
     }, 800);
   }
-  const [isEmpty,setIsEmpty] = useState(true)
-  const toggleSelect = useCallback((id:number) => {
+  const [isEmpty, setIsEmpty] = useState(true)
+  const toggleSelect = useCallback((id: number) => {
     setAllEx((prevWorkouts) =>
       prevWorkouts.map((workout) =>
         workout.id === id ? { ...workout, exerciseSelected: !workout.exerciseSelected } : workout
       )
     );
     console.log(allEx);
-    
+
   }, []);
-  
-  
+
+
   const handleStartWorkout = () => {
     const selectedWorkouts = allEx.filter(workout => workout.exerciseSelected);
     voidSelectWorkout(selectedWorkouts);
     console.log(selectedWorkouts);
     navigation.navigate('Workout');
   };
-  const [added,setAdded] = useState(false)
-  const [infoUser,setInfoUser] = useState({})
+  const [added, setAdded] = useState(false)
+  const [infoUser, setInfoUser] = useState({})
 
-  const getUser = async() => {
+  const getUser = async () => {
     const token = await AsyncStorage.getItem('token')
     const email = await AsyncStorage.getItem('email')
     const url = `http://192.168.0.214:8090/api/users/get/${email}`;
@@ -93,24 +93,25 @@ export default function SelectWork() {
         'Authorization': `Bearer ${token}`
       }
     })
-    .then(response => {
-      if (!response.ok) throw new Error('Network response was not ok')
-      return response.json();
-    })
-    .then(data=> {
-      setInfoUser(data)
-    })
+      .then(response => {
+        if (!response.ok) throw new Error('Network response was not ok')
+        return response.json();
+      })
+      .then(data => {
+        setInfoUser(data)
+      })
   }
 
   const fnAddFavorite = async (idEx) => {
     const token = await AsyncStorage.getItem('token');
     const email = await AsyncStorage.getItem('email');
     const url = `http://192.168.0.214:8090/favorites/add`;
-  
-    const alreadyInFavorites = infoUser.favorites.some(
+
+    const alreadyInFavorites = infoUser.favorites && infoUser.favorites.some(
       (favorite) => favorite.exercise.id === idEx
     );
-  
+
+
     if (alreadyInFavorites) {
       Toast.show({
         type: 'info',
@@ -145,25 +146,26 @@ export default function SelectWork() {
         });
     }
   };
-  
 
-  const addFavorite = () => {
-    getUser()
+
+  const addFavorite = async () => {
+    await getUser();
     const selectedWorkouts = allEx.filter(workout => workout.exerciseSelected);
-    setFavEx(selectedWorkouts)
-    
+    setFavEx(selectedWorkouts);
+
     for (const iterator of selectedWorkouts) {
-      fnAddFavorite(iterator.id)
+      fnAddFavorite(iterator.id);
     }
-  }
-  
-  useEffect(()=>{
+  };
+
+
+  useEffect(() => {
     const selectedWorkouts = allEx.filter(workout => workout.exerciseSelected);
     setFavEx(selectedWorkouts)
-    
+
     onRefresh()
-  },[])
-  
+  }, [])
+
   useEffect(() => {
     const anySelected = allEx.some(workout => workout.exerciseSelected);
     setIsEmpty(!anySelected);
@@ -180,7 +182,7 @@ export default function SelectWork() {
           />
         } showsVerticalScrollIndicator={false}>
           <View style={styles.header}>
-            <TouchableOpacity style={{padding: 5}} onPress={()=>navigation.navigate('Home')}>
+            <TouchableOpacity style={{ padding: 5 }} onPress={() => navigation.navigate('Home')}>
               <Svg
                 width={10}
                 height={17}
@@ -201,33 +203,33 @@ export default function SelectWork() {
                 color: '#FFFFFF',
                 fontSize: 21,
                 fontFamily: 'Regular',
-              
+
               }}>{category}</Text>
             </View>
             <View>
-            <TouchableOpacity style={{padding: 5}} onPress={addFavorite}>
-              {
-                !added?(
-                  <Svg width={16} height={15} fill="none">
-                    <Path
-                      stroke="#fff"
-                      strokeWidth={1.5}
-                      d="M7.348 2.586 8 3.73l.652-1.144c.86-1.509 2.51-2.061 3.97-1.743 1.428.313 2.628 1.45 2.628 3.379 0 1.306-.77 2.735-2.218 4.468-1.07 1.281-2.426 2.637-3.945 4.155-.354.353-.717.716-1.087 1.089-.371-.374-.735-.738-1.09-1.092C5.393 11.325 4.037 9.97 2.968 8.69 1.521 6.957.75 5.528.75 4.222c0-1.923 1.198-3.067 2.625-3.383 1.455-.323 3.106.224 3.973 1.747Z"
-                    />
-                  </Svg>
-                ):(
-                  <Svg xmlns="http://www.w3.org/2000/svg" width={16} height={15} fill="none">
-                    <Path
-                      fill="#DF3525"
-                      stroke="#7B2722"
-                      strokeWidth={1.5}
-                      d="M7.348 2.586 8 3.73l.652-1.144c.86-1.509 2.51-2.061 3.97-1.743 1.428.313 2.628 1.45 2.628 3.379 0 1.306-.77 2.735-2.218 4.468-1.07 1.281-2.426 2.637-3.945 4.155-.354.353-.717.716-1.087 1.089-.371-.374-.735-.738-1.09-1.092C5.393 11.325 4.037 9.97 2.968 8.69 1.521 6.957.75 5.528.75 4.222c0-1.923 1.198-3.067 2.625-3.383 1.455-.323 3.106.224 3.973 1.747Z"
-                    />
-                  </Svg>
-                )
-              }
-              
-            </TouchableOpacity>
+              <TouchableOpacity style={{ padding: 5 }} onPress={addFavorite}>
+                {
+                  !added ? (
+                    <Svg width={16} height={15} fill="none">
+                      <Path
+                        stroke="#fff"
+                        strokeWidth={1.5}
+                        d="M7.348 2.586 8 3.73l.652-1.144c.86-1.509 2.51-2.061 3.97-1.743 1.428.313 2.628 1.45 2.628 3.379 0 1.306-.77 2.735-2.218 4.468-1.07 1.281-2.426 2.637-3.945 4.155-.354.353-.717.716-1.087 1.089-.371-.374-.735-.738-1.09-1.092C5.393 11.325 4.037 9.97 2.968 8.69 1.521 6.957.75 5.528.75 4.222c0-1.923 1.198-3.067 2.625-3.383 1.455-.323 3.106.224 3.973 1.747Z"
+                      />
+                    </Svg>
+                  ) : (
+                    <Svg xmlns="http://www.w3.org/2000/svg" width={16} height={15} fill="none">
+                      <Path
+                        fill="#DF3525"
+                        stroke="#7B2722"
+                        strokeWidth={1.5}
+                        d="M7.348 2.586 8 3.73l.652-1.144c.86-1.509 2.51-2.061 3.97-1.743 1.428.313 2.628 1.45 2.628 3.379 0 1.306-.77 2.735-2.218 4.468-1.07 1.281-2.426 2.637-3.945 4.155-.354.353-.717.716-1.087 1.089-.371-.374-.735-.738-1.09-1.092C5.393 11.325 4.037 9.97 2.968 8.69 1.521 6.957.75 5.528.75 4.222c0-1.923 1.198-3.067 2.625-3.383 1.455-.323 3.106.224 3.973 1.747Z"
+                      />
+                    </Svg>
+                  )
+                }
+
+              </TouchableOpacity>
             </View>
           </View>
           <View style={styles.main}>
@@ -257,23 +259,23 @@ export default function SelectWork() {
                     flexDirection: 'row',
                     alignItems: 'center',
                     justifyContent: 'space-between'
-                  }}> 
-                    <View style={{flexDirection: 'row', height: '100%',width:'70%', alignItems: 'center', gap: 20}}>
+                  }}>
+                    <View style={{ flexDirection: 'row', height: '100%', width: '70%', alignItems: 'center', gap: 20 }}>
                       <View>
                         {
-                          item.exerciseSelected? (
-                            <TouchableOpacity 
-                            onPress={() => toggleSelect(item.id)}
-                            style={{
-                              width: 35,
-                              height: 35,
-                              borderRadius: 7,
-                              backgroundColor: '#1F3D18',
-                              borderColor: '#38692D',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              borderWidth: 1,
-                            }}>
+                          item.exerciseSelected ? (
+                            <TouchableOpacity
+                              onPress={() => toggleSelect(item.id)}
+                              style={{
+                                width: 35,
+                                height: 35,
+                                borderRadius: 7,
+                                backgroundColor: '#1F3D18',
+                                borderColor: '#38692D',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                borderWidth: 1,
+                              }}>
                               <Svg
                                 width={12}
                                 height={10}
@@ -289,42 +291,42 @@ export default function SelectWork() {
                                 />
                               </Svg>
                             </TouchableOpacity>
-                          ):(
-                            <TouchableOpacity 
-                            onPress={() => toggleSelect(item.id)}                       
-                            style={{
-                              width: 35,
-                              height: 35,
-                              borderRadius: 7,
-                              backgroundColor: '#17181B',
-                              borderColor: '#27292E',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              borderWidth: 1,
-                            }}/>
+                          ) : (
+                            <TouchableOpacity
+                              onPress={() => toggleSelect(item.id)}
+                              style={{
+                                width: 35,
+                                height: 35,
+                                borderRadius: 7,
+                                backgroundColor: '#17181B',
+                                borderColor: '#27292E',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                borderWidth: 1,
+                              }} />
                           )
                         }
                       </View>
                       <View style={{
-                        width:1,
+                        width: 1,
                         height: '100%',
                         backgroundColor: '#E0FE10',
                         borderRadius: 5,
-                      }}/>
+                      }} />
                       <View style={{
-                        display: 'flex', 
+                        display: 'flex',
                         flexDirection: 'column',
-                        gap: 5, 
+                        gap: 5,
                         alignItems: 'flex-start'
                       }}>
                         <Text style={{
-                          color: '#FFFFFF', 
-                          fontSize: 15, 
+                          color: '#FFFFFF',
+                          fontSize: 15,
                           fontFamily: 'Bold',
                         }}>
                           {item.exerciseTitle}
                         </Text>
-                        <View style={{flexDirection: 'row', gap: 5, alignItems: 'center'}}>
+                        <View style={{ flexDirection: 'row', gap: 5, alignItems: 'center' }}>
                           <Svg
                             width={10}
                             height={11}
@@ -337,14 +339,14 @@ export default function SelectWork() {
                             />
                           </Svg>
                           <Text style={{
-                            color: 'rgba(255,255,255,0.5)', 
-                            fontSize: 12, 
+                            color: 'rgba(255,255,255,0.5)',
+                            fontSize: 12,
                             fontFamily: 'Light'
                           }}>
-                              {item.exerciseDuration} min
+                            {item.exerciseDuration} min
                           </Text>
                         </View>
-                        <View style={{flexDirection: 'row', gap: 5, alignItems: 'center'}}>
+                        <View style={{ flexDirection: 'row', gap: 5, alignItems: 'center' }}>
                           <Svg
                             width={9}
                             height={15}
@@ -357,49 +359,49 @@ export default function SelectWork() {
                             />
                           </Svg>
                           <Text style={{
-                            color: 'rgba(255,255,255,0.5)', 
-                            fontSize: 12, 
-                            fontFamily:'Light'
-                            }}>
-                              {item.exerciseKcal} kcal
+                            color: 'rgba(255,255,255,0.5)',
+                            fontSize: 12,
+                            fontFamily: 'Light'
+                          }}>
+                            {item.exerciseKcal} kcal
                           </Text>
                         </View>
                       </View>
                     </View>
-                   
-                    <Image style={{width: '30%', height: 80, borderRadius:12}} source={{uri:  item.exerciseImage}} />
+
+                    <Image style={{ width: '30%', height: 80, borderRadius: 12 }} source={{ uri: item.exerciseImage }} />
                   </View>
                 ))
               }
             </View>
           </View>
-          
+
         </ScrollView>
         {
-          !isEmpty?(
-            <TouchableOpacity 
+          !isEmpty ? (
+            <TouchableOpacity
               onPress={handleStartWorkout}
               style={styles.btnGo}>
-                <Text style={{
-                  color: '#17181B',
-                  fontSize: 16,
-                  fontFamily: 'Regular',
-                  textAlign: 'center',
-                }}>
-                  Start Workout
-                </Text>
+              <Text style={{
+                color: '#17181B',
+                fontSize: 16,
+                fontFamily: 'Regular',
+                textAlign: 'center',
+              }}>
+                Start Workout
+              </Text>
             </TouchableOpacity>
-          ):(
-            <TouchableOpacity 
+          ) : (
+            <TouchableOpacity
               style={styles.btnSt}>
-                <Text style={{
-                  color: 'rgba(23,24,27,0.5)',
-                  fontSize: 16,
-                  fontFamily: 'Regular',
-                  textAlign: 'center',
-                }}>
-                  Start Workout
-                </Text>
+              <Text style={{
+                color: 'rgba(23,24,27,0.5)',
+                fontSize: 16,
+                fontFamily: 'Regular',
+                textAlign: 'center',
+              }}>
+                Start Workout
+              </Text>
             </TouchableOpacity>
           )
         }

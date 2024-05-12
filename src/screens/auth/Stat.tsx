@@ -101,7 +101,7 @@ export default function Stat() {
       }));
       setLatTrain(reformattedData)
     }
-  }
+  }   
   
   const filterDataByPeriod = (data, period) => {
     const currentDate = new Date();
@@ -111,7 +111,7 @@ export default function Stat() {
           return  moment(item.trainingDate, "ddd MMM DD HH:mm:ss zzz YYYY").format('ddd MMM DD YYYY') === currentDate.toDateString();
         });
       case 'Weekly':
-        const oneWeekAgo = new Date(currentDate.getTime() - 7 * 24 * 60 * 60 * 1000);
+        const oneWeekAgo = new Date(currentDate.getTime() - 6 * 24 * 60 * 60 * 1000);
         return data.filter(item => {
           const options = {
             weekday: 'short',
@@ -166,24 +166,45 @@ export default function Stat() {
     const userData = await getUser();
     if (userData) {
       setUserInfo(userData);
+      const filteredData = filterDataByPeriod(userData.latestTrainings, activeToday);
       createLatestTrain(filteredData);
     }
     setRefreshing(false);
   };
+  const [countTask, setCountTask] = useState(0)
+  const getTodayTasks = () => {
+    if(userInfo.userCalendar){
+      let countst = 0
+      for (const iterator of userInfo.userCalendar) {
+        const exerDate = moment(iterator.calendarDate, "DD MMM").format('DD MMM');
+        const currentDate = new Date();
+        const nowDate = moment(currentDate).format('DD MMM');
+        if(exerDate==nowDate){
+          countst+=1
+        }
+      }
+    setCountTask(countst)
+    }
+  }
+  
   useEffect(() => {
     const fetchData = async () => {
       setRefreshing(true); 
       const userData = await getUser();
       if (userData) {
         setUserInfo(userData);
+        const filteredData = filterDataByPeriod(userData.latestTrainings, activeToday);
         createLatestTrain(filteredData);
+        getTodayTasks(); 
       }
       setRefreshing(false);
     };
-    fetchData(); 
+    fetchData();
   }, []);
+  
   useEffect(()=>{
     onRefresh()
+    getTodayTasks(); 
   },[activeToday])
   
   return (
@@ -401,7 +422,7 @@ export default function Stat() {
                 fontSize: 14,
                 color: 'white',
               }}>
-                You have still 4 daily tasks
+                You have still {countTask} daily tasks
               </Text>
             </View>
             <JustArrow/>
@@ -441,8 +462,8 @@ export default function Stat() {
             marginBottom: 70,
           }}>
             {
-              latTrain?.map((item)=> (
-                <RecentActiv icon={item.exerciseImage} title={item.exerciseTitle} kcal={item.exerciseKcal} min={item.exerciseDuration} time={item.trainingDate}/>              
+              latTrain?.map((item,index)=> (
+                <RecentActiv index={index} icon={item.exerciseImage} title={item.exerciseTitle} kcal={item.exerciseKcal} min={item.exerciseDuration} time={item.trainingDate}/>              
               ))
             }
           </View>

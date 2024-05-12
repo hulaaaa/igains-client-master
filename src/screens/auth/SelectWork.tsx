@@ -133,9 +133,12 @@ export default function SelectWork() {
         .then(response => {
           if (!response.ok) throw new Error('Network response was not ok');
           setAdded(true);
+          setTimeout(() => {
+            setAdded(false);
+          }, 1000);
           Toast.show({
             type: 'success',
-            visibilityTime: 4000,
+            visibilityTime: 2000,
             text1: `Add new training to your Favorite!`,
             text2: `Let's train! 🏋️‍♂️`,
           });
@@ -228,7 +231,6 @@ export default function SelectWork() {
                     </Svg>
                   )
                 }
-
               </TouchableOpacity>
             </View>
           </View>

@@ -38,7 +38,7 @@ export default function TasksTodayHome({firstSweat,initialTime,punctuality,inLov
           present: punctuality,
       },
       {
-          title: "In love on Training ",
+          title: "In love on Training",
           icon: (
             <Svg xmlns="http://www.w3.org/2000/svg" width={30} height={28} fill="none">
               <Path

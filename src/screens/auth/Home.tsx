@@ -43,7 +43,6 @@ export default function Home() {
       // 1) First Sweat  - виконав 5 тренувань
       const finishPoint = 5
       if(getUser.latestTrainings && getUser.latestTrainings.length >= finishPoint){
-        console.log(getUser.latestTrainings.length);
         setFirstSweat(100)
       }else{
         setFirstSweat(getUser.latestTrainings.length / finishPoint * 100)

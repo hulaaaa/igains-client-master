@@ -63,6 +63,7 @@ export default function Planer() {
               exerciseCategory: exercise.exerciseCategory,
               exerciseDuration: exercise.exerciseDuration,
               exerciseImage: exercise.exerciseImage,
+              isCompleted: exercise.isCompleted,
               exerciseKcal: exercise.exerciseKcal,
               exerciseSelected: exercise.exerciseSelected,
               exerciseTitle: exercise.exerciseTitle,
@@ -154,78 +155,81 @@ export default function Planer() {
   const renderItem = (data,index) => (
     <View>
       {
-      (data.item.calendarDate === `${activeDay} ${selectedMonth}`)?(
-        <TouchableHighlight key={data.item.id}
-                  onPress={() => console.log('You touched me')}
-                  style={styles.rowFront}
-              >
-            <View style={{
-            display: 'flex',
-            flexDirection: 'row',
-            alignItems: 'center',
-            gap: 15
-          }}>
-            
-            <View>
-              <Text style={{
-                color: '#FFFFFF',
-                fontFamily: 'Light',
-                fontSize: 15,
-              }}>
-                {moment((data.item.startTime), 'hm').format('HH:mm')}
-              </Text>
+        data.item.completed == false?(
+          (data.item.calendarDate === `${activeDay} ${selectedMonth}`)?(
+          <View key={data.item.id}
+                    style={styles.rowFront}
+                >
+              <View style={{
+              display: 'flex',
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 15
+            }}>
+              
+              <View>
+                <Text style={{
+                  color: '#FFFFFF',
+                  fontFamily: 'Light',
+                  fontSize: 15,
+                }}>
+                  {moment((data.item.startTime), 'hm').format('HH:mm')}
+                </Text>
+                <Text style={{
+                  color: '#FFFFFF',
+                  fontFamily: 'Bold',
+                  fontSize: 15,
+                }}>
+                  -
+                </Text>
+                <Text style={{
+                  color: '#FFFFFF',
+                  fontFamily: 'Light',
+                  fontSize: 15,
+                }}>
+                  {
+                    moment(data.item.startTime, 'HH:mm').clone().add(data.item.exerciseDuration * data.item.setQuantity + (data.item.breakDuration * data.item.setQuantity - 1), 'minutes').format('HH:mm')
+                  }
+                </Text>
+              </View>
+
+
+              <View style={{ height: '100%', width: 1, borderRadius:5, backgroundColor: '#E0FE10' }}></View>
+
+
+              <View>
+                
               <Text style={{
                 color: '#FFFFFF',
                 fontFamily: 'Bold',
-                fontSize: 15,
+                fontSize: 16,
               }}>
-                -
+                {data.item.exerciseTitle}
               </Text>
-              <Text style={{
-                color: '#FFFFFF',
-                fontFamily: 'Light',
-                fontSize: 15,
-              }}>
-                {
-                  moment(data.item.startTime, 'HH:mm').clone().add(data.item.exerciseDuration * data.item.setQuantity + (data.item.breakDuration * data.item.setQuantity - 1), 'minutes').format('HH:mm')
-                }
-              </Text>
-            </View>
 
-
-            <View style={{ height: '100%', width: 1, borderRadius:5, backgroundColor: '#E0FE10' }}></View>
-
-
-            <View>
-              
-            <Text style={{
-              color: '#FFFFFF',
-              fontFamily: 'Bold',
-              fontSize: 16,
-            }}>
-              {data.item.exerciseTitle}
-            </Text>
-
-              <View>
-                <Text style={{
-                  color: 'rgba(255,255,255,0.5)',
-                  fontFamily: 'Regular',
-                  fontSize: 14,
-                }}>
-                  {data.item.setQuantity} time - {data.item.exerciseDuration} min
-                </Text>
-                <Text style={{
-                  color: '#E0FE10',
-                  fontFamily: 'Light',
-                  fontSize: 12,
-                }}>
-                  Break: {data.item.breakDuration} min
-                </Text>
+                <View>
+                  <Text style={{
+                    color: 'rgba(255,255,255,0.5)',
+                    fontFamily: 'Regular',
+                    fontSize: 14,
+                  }}>
+                    {data.item.setQuantity} time - {data.item.exerciseDuration} min
+                  </Text>
+                  <Text style={{
+                    color: '#E0FE10',
+                    fontFamily: 'Light',
+                    fontSize: 12,
+                  }}>
+                    Break: {data.item.breakDuration} min
+                  </Text>
+                </View>
               </View>
             </View>
           </View>
-        </TouchableHighlight>
-      ):(null)
+        ):(null)
+        ):(null)
+           
+       
     }
     </View>
     
@@ -240,7 +244,34 @@ export default function Planer() {
 
   const modalVisibleEdit = useStore(state => state.visibleModalEdit);
   const setModalVisibleEdit = useStore(state => state.voidVisibleModalEdit);
-
+  
+  const updateCalendar = async (info) => {
+    console.log(info);
+    try {
+      const token = await AsyncStorage.getItem('token');
+      const email = await AsyncStorage.getItem('email');
+      const dataBody = {
+        calendarId: info.id,
+        isCompleted: true,
+      };
+      const url = `http://192.168.0.214:8090/calendar/complete`;
+      const requestOptions = {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(dataBody)
+      };
+      const response = await fetch(url, requestOptions);
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      // Handle response data if needed
+    } catch (error) {
+      console.error('Error updating calendar:', error);
+    }
+  };
   const setOpenRow = useStore(state => state.voidOpenedRow);
 
   // const renderHiddenItem = (data, rowMap) => (
@@ -309,6 +340,23 @@ export default function Planer() {
   const renderHiddenItem = (data, rowMap) => (
     <View style={styles.rowBack}>
       <TouchableOpacity
+            style={[styles.backRightBtn, styles.backRightBtnLeft]}
+            onPress={() => {
+              setOpenRow(data)
+              updateCalendar(data.item)
+            }}
+        >
+            <Svg width={16} height={13} fill="none">
+            <Path
+              stroke="#64C747"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="m1 7.527 4 4.21 9.5-10"
+            />
+          </Svg>
+        </TouchableOpacity>
+      <TouchableOpacity
         style={[styles.backRightBtn, styles.backRightBtnRight]}
         onPress={() => {
           setOpenRow(data);
@@ -364,7 +412,6 @@ export default function Planer() {
       }
       <SafeAreaView>
         <View style={!modalVisible&&!modalVisibleDelete&&!modalVisibleEdit ?{ opacity: 1}:{ opacity: 0.15}}>
-          
           <View style={styles.header_search}>
             <HeaderText first="Calendar" second={null} />
           </View>
@@ -495,7 +542,7 @@ export default function Planer() {
               </ScrollView>
             </View>
  
-          <ScrollView style={styles.listPlaner} refreshControl={<RefreshControl tintColor={'#E0FE10'} refreshing={refreshing}onRefresh={onRefresh}/>} showsVerticalScrollIndicator={false}>
+          <ScrollView style={styles.listPlaner} refreshControl={<RefreshControl tintColor={'#E0FE10'} refreshing={refreshing} onRefresh={onRefresh}/>} showsVerticalScrollIndicator={false}>
             <SwipeListView
                 data={user}
                 renderItem={renderItem}
@@ -602,7 +649,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     position: 'absolute',
     top: 0,
-    width: 155,
+    width: 75,
   },
   backRightBtnLeft: {
     backgroundColor: '#1F3D18',
@@ -610,7 +657,7 @@ const styles = StyleSheet.create({
     borderColor: '#38692D',
     borderWidth: 1,
     padding: 12,
-    right: 55,
+    right: 83,
   },
   backRightBtnRight: {
     backgroundColor: '#470F0E',

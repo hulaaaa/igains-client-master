@@ -81,9 +81,10 @@ export default function Favorite() {
     })
     .then(response => {
       if (!response.ok) throw new Error('Network response was not ok');
-      const updatedWorkoutItem = { ...workoutItem };
-      updatedWorkoutItem.favorites = updatedWorkoutItem.favorites.filter(favorite => favorite.exercise.id !== exercise.id);
-      setWorkoutItem(updatedWorkoutItem);
+      const updatedWorkoutItem = { ...workoutItem }
+      updatedWorkoutItem.favorites = updatedWorkoutItem.favorites.filter(favorite => favorite.exercise.id !== exercise.id)
+      setWorkoutItem(updatedWorkoutItem)
+      setFavoriteExercises(prevExercises => prevExercises.filter(item => item.id !== exercise.id))
       Toast.show({
         type: 'success',
         visibilityTime: 4000,
@@ -110,7 +111,7 @@ export default function Favorite() {
   }, [workoutItem]);
   
   useEffect(() => {
-    getFavoriteExercises();
+    getFavoriteExercises()
   }, [workoutItem]);
   
 

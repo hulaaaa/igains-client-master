@@ -324,6 +324,10 @@ export default function AddNewExercise({activeDay, selectedMonth}) {
                     onDurationChange={(duration) => setNumOfSet(duration.hours)}
                     hourLabel=""
                     hideSeconds
+                    hourLimit={{
+                      max: 23,
+                      min: 1
+                    }}
                     hideMinutes
                     styles={{
                         pickerItem: {

@@ -22,7 +22,6 @@ SplashScreen.preventAutoHideAsync();
 export default function Profile({route}) {
   const navigation = useNavigation()
   const { handleLogout } = route.params;
-
   const [refreshing, setRefreshing] = useState(false);
   const [fontsLoaded, fontError] = useFonts({
     'Regular': require('../../../assets/fonts/regular.otf'),
@@ -44,26 +43,80 @@ export default function Profile({route}) {
   }
   const progress = 0.27;
 
-  const awards_user = [
+  let awards_user = [ 
     {
-      name: 'Ghost',
-      description: 'You missed for a week exercises!',
+      name: 'First Sweat',
+      description: 'You completed 5 exercises!',
+      img: <ShinyStartIcon/>,
+    },
+    { 
+      name: 'Initial Time',
+      description: 'You reached First Hour',
+      img: <SniperIcon/>,
+    },
+    {
+      name: 'Punctuality',
+      description: 'You completed first Goal!',
       img: <GhostIcon/>,
     },
     {
-      name: 'Shiny Star',
-      description: 'You’ve completed first goal!',
-      img: <ShinyStartIcon/>,
-    },
-    {
-      name: 'Sniper',
-      description: 'You’ve completed all your target!',
-      img: <SniperIcon/>,
-    },
+      name: 'In love on Training',
+      description: 'You added 10 favorites!',
+      img: (
+        <Svg xmlns="http://www.w3.org/2000/svg" width={30} height={28} fill="none">
+          <Path
+            fill="#E03326"
+            d="M2.722 2.428A8.787 8.787 0 0 0 2.573 15L15 27.427 27.427 15A8.787 8.787 0 0 0 15 2.573a8.787 8.787 0 0 0-12.278-.145Z"
+          />
+        </Svg>
+      ),
+    }
   ]
-  const [test,useTest] = useState({
 
-  });
+  const [test,setTest] = useState({})
+  const [one,setOne] = useState(false)
+  const [two,setTwo] = useState(false)
+  const [three,setThree] = useState(false)
+  const [four,setFour] = useState(false)
+
+  let total = 0
+  const checkAwards = () => {
+    if(test.latestTrainings && test.latestTrainings.length >= finishPoint){
+        
+    }
+  }
+  // const checkAwards = useCallback(() => {
+    // if(test.latestTrainings && test.userCalendar){
+    //   // 1) First Sweat  - виконав 5 тренувань
+    //   const finishPoint = 5
+    //   if(test.latestTrainings && test.latestTrainings.length >= finishPoint){
+        
+    //   }else{
+        
+  //     }
+
+  //     // 2) Initial time  - перша година тренувань
+  //     for (const iterator of test.latestTrainings) {
+  //       total+=iterator.exercise.exerciseDuration
+  //     }
+
+  //     // 3) punctuality - виконав перше завдання з календаря
+  //     for (const iterator of test.userCalendar) {
+  //       if(iterator.completed){
+          
+  //       }else{
+          
+  //       }
+  //     }
+
+  //     // 4) in love with training - 10 улюблених
+  //     if(test.favorites.length >= 10){
+        
+  //     }else{
+        
+  //     }
+  //   }
+  // }, [test]);
   async function updateDate () {
     const token = await AsyncStorage.getItem('token')
     const email = await AsyncStorage.getItem('email')
@@ -82,9 +135,7 @@ export default function Profile({route}) {
       return response.json();
     })
     .then(data => {
-      useTest(data)
-      console.log(test);
-      
+      setTest(data)
     })
     .finally(()=> {
       console.log(test);
@@ -96,6 +147,7 @@ export default function Profile({route}) {
   }
   useEffect(() => {
     updateDate();
+    // checkAwards()
   }, []);
   
   const onRefresh = () => {
@@ -104,7 +156,7 @@ export default function Profile({route}) {
       updateDate()
       setRefreshing(false);
     }, 800);
-};
+  };
 
   return (
     <View style={styles.container} onLayout={onLayoutRootView}>
@@ -265,30 +317,52 @@ export default function Profile({route}) {
           </View>
  
           <View style={styles.divtasks}>
-            <Text style={{alignSelf: 'flex-start', marginTop: 10, fontFamily:'Regular', color: 'white', fontSize: 20}}>
+            <Text style={{alignSelf: 'flex-start', fontFamily:'Regular', color: 'white', fontSize: 20}}>
               My Awards
             </Text>
-            <View style={{
+            <ScrollView horizontal={true} showsHorizontalScrollIndicator={false}  style={{
               width: '100%',
               display: 'flex',
-              flexDirection: 'row',
-              alignItems: 'center',
-              justifyContent: 'space-between',
+              flexDirection: 'row'
             }}>
-              {
-                !awards_user?<Text style={{fontFamily: 'Light', color: 'white', fontSize: 16}}>You don't have any awards yet</Text>:awards_user.map((item,index)=>{
-                  return (
-                    <TouchableOpacity key={index} style={{backgroundColor: '#17181B', flexDirection: 'column', alignItems: 'center',gap: 9, borderRadius: 10, width: '31%', padding: 12,}}>
-                      {item.img}
-                      <Text style={{fontFamily: 'Regular', color: 'white', fontSize: 16}}>{item.name}</Text>
-                      <Text style={{fontFamily: 'Regular',textAlign:'center', color: 'rgba(255,255,255,0.5)', fontSize: 12}}>{item.description}</Text>
-                    </TouchableOpacity>
-                  )
-                })
+            {awards_user.filter(item => {
+              switch (item.name) {
+                case 'First Sweat':
+                  return true
+                  // return test.latestTrainings && test.latestTrainings.length >= 5;
+                case 'Initial Time':
+                  return true
+                case 'Punctuality':
+                  return true
+                case 'In love on Training':
+                  return true
+                default:
+                  return false;
               }
-
-            </View>
+            }).map((item, index) => (
+              <View key={index} style={{backgroundColor: '#17181B', marginRight: 10,flexDirection: 'column', alignItems: 'center',gap: 9, borderRadius: 10, width: 107, padding: 12,}}>
+                {item.img}
+                <Text style={{fontFamily: 'Regular', color: 'white', fontSize: 16}}>{item.name}</Text>
+                <Text style={{fontFamily: 'Regular',textAlign:'center', color: 'rgba(255,255,255,0.5)', fontSize: 12}}>{item.description}</Text>
+              </View>
+            ))}
+            {awards_user.filter(item => {
+              switch (item.name) {
+                case 'First Sweat':
+                case 'Initial Time':
+                case 'Punctuality':
+                case 'In love on Training':
+                  return true;
+                default:
+                  return false;
+              }
+            }).length === 0 && (
+              <View key={index} style={{backgroundColor: '#17181B', marginRight: 10,flexDirection: 'column', alignItems: 'center',gap: 9, borderRadius: 10, width: 107, padding: 12,}}>
+              </View>
+            )}
+            </ScrollView>
           </View>
+
  
           <View style={styles.divtasks}>
             <Text style={{alignSelf: 'flex-start', marginTop: 10, fontFamily:'Regular', color: 'white', fontSize: 20}}>

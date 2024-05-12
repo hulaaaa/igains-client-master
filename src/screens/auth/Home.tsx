@@ -24,6 +24,11 @@ export default function Home() {
   const [getUser, setGetUser] = useState({})
   const navigation = useNavigation<any>();
   const [refreshing, setRefreshing] = useState(false);
+  const [firstSweat, setFirstSweat] = useState(0)
+  const [initialTime, setInitialTime] = useState(0)
+  const [punctuality, setPunctuality] = useState(0)
+  const [inLove, setInLove] = useState(0)
+
   const [fontsLoaded, fontError] = useFonts({
     'Regular': require('../../../assets/fonts/regular.otf'),
     'RegularItalic': require('../../../assets/fonts/regular-italic.otf'),
@@ -32,7 +37,42 @@ export default function Home() {
     'Bold': require('../../../assets/fonts/bold.otf'),
     'BoldItalic': require('../../../assets/fonts/bold-italic.otf'),
   });
- 
+  
+  const checkAwards = useCallback(() => {
+    if(getUser.latestTrainings && getUser.userCalendar){
+      // 1) First Sweat  - виконав 5 тренувань
+      const finishPoint = 5
+      if(getUser.latestTrainings && getUser.latestTrainings.length >= finishPoint){
+        console.log(getUser.latestTrainings.length);
+        setFirstSweat(100)
+      }else{
+        setFirstSweat(getUser.latestTrainings.length / finishPoint * 100)
+      }
+
+      // 2) Initial time  - перша година тренувань
+      let total = 0
+      for (const iterator of getUser.latestTrainings) {
+        total+=iterator.exercise.exerciseDuration
+      }
+      setInitialTime(total / 60 * 100)
+
+      // 3) punctuality - виконав перше завдання з календаря
+      for (const iterator of getUser.userCalendar) {
+        if(iterator.completed){
+          setPunctuality(100)
+        }else{
+          setPunctuality(0)
+        }
+      }
+
+      // 4) in love with training - 10 улюблених
+      if(getUser.favorites.length >= 10){
+        setInLove(100)
+      }else{
+        setInLove(getUser.favorites.length / 10 * 100)
+      }
+    }
+  }, [getUser]);
   const handleFontLoading = useCallback(async () => {
     if (fontsLoaded || fontError) {
       await SplashScreen.hideAsync();
@@ -66,15 +106,26 @@ export default function Home() {
       .then(data => {
         setGetUser(data)
       })
+      .then(() => {
+        checkAwards(); 
+      });
     }
   };
-  useEffect(()=>{handleRefresh()},[])
+  
   const handleRefresh = () => {
     setRefreshing(true);
     getAllExercises();
     setTimeout(() => {setRefreshing(false);}, 800);
   };
-
+  useEffect(()=>{
+    getAllExercises();
+    handleRefresh()
+  },[])
+  useEffect(()=>{
+    if(getUser){
+      checkAwards()
+    }
+  },[getUser])
   if (!fontsLoaded && !fontError) {return null;}
   
   return (
@@ -95,7 +146,7 @@ export default function Home() {
         </View>
           <View style={styles.divtasks}>
             <Text style={{ fontFamily: 'Regular', fontSize: 21, color: 'white', }}>{AWARDS_TEXT}</Text>
-            <TasksTodayHome getUser={getUser.userAwards} />
+            <TasksTodayHome firstSweat={firstSweat} initialTime={initialTime} punctuality={punctuality} inLove={inLove} getUser={getUser.userAwards} />
           </View>
 
 

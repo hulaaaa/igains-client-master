@@ -10,6 +10,7 @@ import SniperIcon from '../../assets/svg/SniperIcon';
 import ShinyStartIcon from '../../assets/svg/ShinyStartIcon';
 import GhostIcon from '../../assets/svg/GhostIcon';
 import { useNavigation } from '@react-navigation/native';
+import { Path, Svg } from 'react-native-svg';
 
 interface Task {
     title: string;
@@ -17,29 +18,36 @@ interface Task {
     present: number;
 }
 
-export default function TasksTodayHome({userAwards}) {
+export default function TasksTodayHome({firstSweat,initialTime,punctuality,inLove,userAwards}) {
   
   const navigation = useNavigation<any>();
   let tasks: Task[] = [
       {
-          title: "Shiny Star",
-          icon: <ShinyStartIcon/>,
-          present: !userAwards?0:userAwards,
-      },
-      {
-          title: "Sniper",
-          icon: <SniperIcon/>,
-          present: !userAwards?0:userAwards,
-      },
-      {
-          title: "Ghost",
-          icon: <GhostIcon/>,
-          present: !userAwards?0:userAwards,
-      },
-      {
           title: "First Sweat",
           icon: <ShinyStartIcon/>,
-          present: !userAwards?0:userAwards,
+          present: firstSweat,
+      },
+      {
+          title: "Initial Time",
+          icon: <SniperIcon/>,
+          present: initialTime,
+      },
+      {
+          title: "Punctuality",
+          icon: <GhostIcon/>,
+          present: punctuality,
+      },
+      {
+          title: "In love on Training ",
+          icon: (
+            <Svg xmlns="http://www.w3.org/2000/svg" width={30} height={28} fill="none">
+              <Path
+                fill="#E03326"
+                d="M2.722 2.428A8.787 8.787 0 0 0 2.573 15L15 27.427 27.427 15A8.787 8.787 0 0 0 15 2.573a8.787 8.787 0 0 0-12.278-.145Z"
+              />
+            </Svg>
+          ),
+          present: inLove,
       },
   ]
     return (
@@ -133,6 +141,8 @@ const styles = StyleSheet.create({
     innerText: {
         fontFamily: 'Regular',
         fontSize: 15,
+        textAlign: 'center',
+        width: 80,
         color: 'white',
     }
 })

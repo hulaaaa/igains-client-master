@@ -58,9 +58,9 @@ export default function Stat() {
   }
   const [refreshing, setRefreshing] = useState(false);
   const navigation = useNavigation();
-  const [userInfo, setUserInfo] = useState([])
+  
   const [latTrain, setLatTrain] = useState([])
-
+  const [userInfo, setUserInfo] = useState([])
   async function getUser() {
     try {
       const token = await AsyncStorage.getItem('token');
@@ -206,6 +206,11 @@ export default function Stat() {
     onRefresh()
     getTodayTasks(); 
   },[activeToday])
+  useEffect(()=> {
+    if(userInfo){
+      getTodayTasks(); 
+    }
+  },[userInfo])
   
   return (
     <View style={styles.container} onLayout={onLayoutRootView}>

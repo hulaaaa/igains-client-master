@@ -179,6 +179,34 @@ export default function Workout() {
   useEffect(() => {
     setExerciseResults(completedExercises);
   }, [completedExercises, currentExerciseIndex]);
+  const [userInfo, setUserInfo] = useState([])
+  async function getUser() {
+    try {
+      const token = await AsyncStorage.getItem('token');
+      const email = await AsyncStorage.getItem('email');
+      const url = `http://192.168.0.214:8090/api/users/get/${email}`;
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      const data = await response.json();
+      setUserInfo(data)
+    } catch (error) {
+      console.error('There was a problem with your fetch operation:', error);
+      return null;
+    }
+  }
+  const checkAwards = async() => {
+    getUser()
+    console.log(userInfo);
+    
+  }
   const stopButtonPress = async() => {
     const token = await AsyncStorage.getItem('token');
     const email = await AsyncStorage.getItem('email');
@@ -208,6 +236,7 @@ export default function Workout() {
           text2: `Let's train! 🏋️‍♂️`,
         });
         navigation.navigate('Home')
+        checkAwards()
         return response.text();
       })
       .catch(err => {

@@ -179,8 +179,8 @@ export default function Stat() {
         const exerDate = moment(iterator.calendarDate, "DD MMM").format('DD MMM');
         const currentDate = new Date();
         const nowDate = moment(currentDate).format('DD MMM');
-        if(exerDate==nowDate){
-          countst+=1
+        if(exerDate==nowDate ){
+          if(iterator.completed == false) countst+=1
         }
       }
     setCountTask(countst)

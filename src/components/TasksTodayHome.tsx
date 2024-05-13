@@ -60,7 +60,7 @@ export default function TasksTodayHome({firstSweat,initialTime,punctuality,inLov
                             {
                                 item.present==100 ? (
                                   <AnimatedCircularProgress
-                                  size={75}
+                                  size={65}
                                   width={6}
                                   fill={item.present}
                                   rotation={0}
@@ -76,7 +76,7 @@ export default function TasksTodayHome({firstSweat,initialTime,punctuality,inLov
                                 </AnimatedCircularProgress>
                                 ) : (
                                   <AnimatedCircularProgress
-                                    size={75}
+                                    size={65}
                                     width={6}
                                     fill={item.present}
                                     rotation={0}
@@ -114,7 +114,7 @@ const styles = StyleSheet.create({
         display: 'flex',
         flexDirection: 'column',
         gap: 7,
-        marginRight: 19,
+        marginRight: 9,
         alignItems: 'center',
         borderRadius: 10,
     },

@@ -202,11 +202,7 @@ export default function Workout() {
       return null;
     }
   }
-  const checkAwards = async() => {
-    getUser()
-    console.log(userInfo);
-    
-  }
+  
   const stopButtonPress = async() => {
     const token = await AsyncStorage.getItem('token');
     const email = await AsyncStorage.getItem('email');
@@ -236,7 +232,6 @@ export default function Workout() {
           text2: `Let's train! 🏋️‍♂️`,
         });
         navigation.navigate('Home')
-        checkAwards()
         return response.text();
       })
       .catch(err => {

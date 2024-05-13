@@ -11,6 +11,7 @@ import { StatusBar } from 'expo-status-bar';
 import TrainingCourse from '../../components/TrainingCourse';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
+import { TouchableOpacity } from 'react-native';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -140,8 +141,21 @@ export default function Home() {
         } showsVerticalScrollIndicator={false}>
           
         <View style={styles.header_search}>
-          <HeaderText first={`Hello, ${getUser.userName} 👋🏻`} second={false} />
-          <SearchBar />
+          <View style={{
+             display: 'flex',
+             flexDirection: 'row',
+             alignItems: 'center',
+             width: '100%',
+             justifyContent: 'space-between',
+          }}>
+            <Text style={{
+              fontFamily: 'Regular',
+              fontSize: 40,
+              color: 'white',
+            }}>{`Hello, ${getUser.userName} 👋🏻`}</Text>
+            {/* <HeaderText first={`Hello, ${getUser.userName} 👋🏻`} second={false} /> */}
+            {/* <SearchBar /> */}
+          </View>
         </View>
           <View style={styles.divtasks}>
             <Text style={{ fontFamily: 'Regular', fontSize: 21, color: 'white', }}>{AWARDS_TEXT}</Text>
@@ -189,7 +203,8 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     gap: 25,
-    marginTop: 20,
+    marginTop: 25,
+    marginBottom: 25,
     width: Dimensions.get('window').width - 50,
   },
   divtasks: {

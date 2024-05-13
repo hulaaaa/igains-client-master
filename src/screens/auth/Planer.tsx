@@ -17,6 +17,7 @@ import { useNavigation } from '@react-navigation/native';
 import { useStore } from '../../services/ZustandModalPassword';
 import DeleteRow from '../../modal/Planer/DeleteRow';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Toast from 'react-native-toast-message';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -155,80 +156,89 @@ export default function Planer() {
   const renderItem = (data,index) => (
     <View>
       {
-        data.item.completed == false?(
-          (data.item.calendarDate === `${activeDay} ${selectedMonth}`)?(
-          <View key={data.item.id}
-                    style={styles.rowFront}
-                >
-              <View style={{
-              display: 'flex',
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: 15
-            }}>
-              
-              <View>
-                <Text style={{
-                  color: '#FFFFFF',
-                  fontFamily: 'Light',
-                  fontSize: 15,
-                }}>
-                  {moment((data.item.startTime), 'hm').format('HH:mm')}
-                </Text>
-                <Text style={{
-                  color: '#FFFFFF',
-                  fontFamily: 'Bold',
-                  fontSize: 15,
-                }}>
-                  -
-                </Text>
-                <Text style={{
-                  color: '#FFFFFF',
-                  fontFamily: 'Light',
-                  fontSize: 15,
-                }}>
-                  {
-                    moment(data.item.startTime, 'HH:mm').clone().add(data.item.exerciseDuration * data.item.setQuantity + (data.item.breakDuration * data.item.setQuantity - 1), 'minutes').format('HH:mm')
-                  }
-                </Text>
-              </View>
+       (data.item.calendarDate === `${activeDay} ${selectedMonth}`)?(
+        <View key={data.item.id}
+                  style={styles.rowFront}
+              >
+            <View style={{
+            display: 'flex',
+            flexDirection: 'row',
+            alignItems: 'center',
 
-
-              <View style={{ height: '100%', width: 1, borderRadius:5, backgroundColor: '#E0FE10' }}></View>
-
-
-              <View>
-                
+            gap: 15
+          }}>
+            
+            <View>
+              <Text style={{
+                color: '#FFFFFF',
+                fontFamily: 'Light',
+                fontSize: 15,
+              }}>
+                {moment((data.item.startTime), 'hm').format('HH:mm')}
+              </Text>
               <Text style={{
                 color: '#FFFFFF',
                 fontFamily: 'Bold',
-                fontSize: 16,
+                fontSize: 15,
               }}>
-                {data.item.exerciseTitle}
+                -
               </Text>
+              <Text style={{
+                color: '#FFFFFF',
+                fontFamily: 'Light',
+                fontSize: 15,
+              }}>
+                {
+                  moment(data.item.startTime, 'HH:mm').clone().add(data.item.exerciseDuration * data.item.setQuantity + (data.item.breakDuration * data.item.setQuantity - 1), 'minutes').format('HH:mm')
+                }
+              </Text>
+            </View>
 
-                <View>
-                  <Text style={{
-                    color: 'rgba(255,255,255,0.5)',
-                    fontFamily: 'Regular',
-                    fontSize: 14,
-                  }}>
-                    {data.item.setQuantity} time - {data.item.exerciseDuration} min
-                  </Text>
-                  <Text style={{
-                    color: '#E0FE10',
-                    fontFamily: 'Light',
-                    fontSize: 12,
-                  }}>
-                    Break: {data.item.breakDuration} min
-                  </Text>
-                </View>
+
+            <View style={{ height: '100%', width: 1, borderRadius:5, backgroundColor: data.item.completed==false?'#E0FE10':'#E03326' }}></View>
+
+
+            <View>
+              
+            <Text style={{
+              color: '#FFFFFF',
+              fontFamily: 'Bold',
+              fontSize: 16,
+            }}>
+              {data.item.exerciseTitle}
+            </Text>
+
+              <View>
+                <Text style={{
+                  color: 'rgba(255,255,255,0.5)',
+                  fontFamily: 'Regular',
+                  fontSize: 14,
+                }}>
+                  {data.item.setQuantity} time - {data.item.exerciseDuration} min
+                </Text>
+                <Text style={{
+                  color: '#E0FE10',
+                  fontFamily: 'Light',
+                  fontSize: 12,
+                }}>
+                  Break: {data.item.breakDuration} min
+                </Text>
               </View>
             </View>
+            
+            {
+               data.item.completed==true?(
+                <Text style={{
+              color: '#FFFFFF',
+              fontFamily: 'Light',
+              fontSize: 15,
+            }}>Completed</Text>
+               ):null
+            }
+            
           </View>
-        ):(null)
-        ):(null)
-           
+        </View>
+      ):(null)
        
     }
     </View>
@@ -266,8 +276,14 @@ export default function Planer() {
       const response = await fetch(url, requestOptions);
       if (!response.ok) {
         throw new Error('Network response was not ok');
+      }else{
+        Toast.show({
+          type: 'success',
+          visibilityTime: 4000,
+          text1: 'Successful deleted your goal!',
+          text2: 'Keep going!'
+        });
       }
-      // Handle response data if needed
     } catch (error) {
       console.error('Error updating calendar:', error);
     }
@@ -338,24 +354,25 @@ export default function Planer() {
   //   </View>
   // );
   const renderHiddenItem = (data, rowMap) => (
-    <View style={styles.rowBack}>
+    (data.item.completed==false)?(
+      <View style={styles.rowBack}>
       <TouchableOpacity
-            style={[styles.backRightBtn, styles.backRightBtnLeft]}
-            onPress={() => {
-              setOpenRow(data)
-              updateCalendar(data.item)
-            }}
-        >
-            <Svg width={16} height={13} fill="none">
-            <Path
-              stroke="#64C747"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="m1 7.527 4 4.21 9.5-10"
-            />
-          </Svg>
-        </TouchableOpacity>
+                  style={[styles.backRightBtn, styles.backRightBtnLeft]}
+                  onPress={() => {
+                    setOpenRow(data)
+                    updateCalendar(data.item)
+                  }}
+              >
+                  <Svg width={16} height={13} fill="none">
+                  <Path
+                    stroke="#64C747"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="m1 7.527 4 4.21 9.5-10"
+                  />
+                </Svg>
+      </TouchableOpacity>
       <TouchableOpacity
         style={[styles.backRightBtn, styles.backRightBtnRight]}
         onPress={() => {
@@ -380,8 +397,9 @@ export default function Planer() {
           />
         </Svg>
       </TouchableOpacity>
-    </View>
-  );
+      </View>
+    ):(null)
+  )
   
   useEffect(()=>{
     getUser()

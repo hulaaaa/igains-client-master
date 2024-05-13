@@ -14,6 +14,7 @@ import ShinyStartIcon from '../../../assets/svg/ShinyStartIcon';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
 import { Circle, Path, Svg } from 'react-native-svg';
+import moment from 'moment';
 
 
 SplashScreen.preventAutoHideAsync();
@@ -41,8 +42,8 @@ export default function Profile({route}) {
   if (!fontsLoaded && !fontError) {
     return null;
   }
-  const progress = 0.27;
-
+  
+  
   let awards_user = [ 
     {
       name: 'First Sweat',
@@ -79,47 +80,11 @@ export default function Profile({route}) {
   const [three,setThree] = useState(false)
   const [four,setFour] = useState(false)
 
-  let total = 0
-  const checkAwards = () => {
-    if(test.latestTrainings && test.latestTrainings.length >= finishPoint){
-        
-    }
-  }
-  // const checkAwards = useCallback(() => {
-    // if(test.latestTrainings && test.userCalendar){
-    //   // 1) First Sweat  - виконав 5 тренувань
-    //   const finishPoint = 5
-    //   if(test.latestTrainings && test.latestTrainings.length >= finishPoint){
-        
-    //   }else{
-        
-  //     }
+  const [progress,setProgress] = useState(0)
 
-  //     // 2) Initial time  - перша година тренувань
-  //     for (const iterator of test.latestTrainings) {
-  //       total+=iterator.exercise.exerciseDuration
-  //     }
-
-  //     // 3) punctuality - виконав перше завдання з календаря
-  //     for (const iterator of test.userCalendar) {
-  //       if(iterator.completed){
-          
-  //       }else{
-          
-  //       }
-  //     }
-
-  //     // 4) in love with training - 10 улюблених
-  //     if(test.favorites.length >= 10){
-        
-  //     }else{
-        
-  //     }
-  //   }
-  // }, [test]);
-  async function updateDate () {
-    const token = await AsyncStorage.getItem('token')
-    const email = await AsyncStorage.getItem('email')
+  async function updateDate() {
+    const token = await AsyncStorage.getItem('token');
+    const email = await AsyncStorage.getItem('email');
     const url = `http://192.168.0.214:8090/api/users/get/${email}`;
 
     fetch(url, {
@@ -128,26 +93,43 @@ export default function Profile({route}) {
         'Authorization': `Bearer ${token}`
       }
     })
-    .then(response => {
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
-      return response.json();
-    })
-    .then(data => {
-      setTest(data)
-    })
-    .finally(()=> {
-      console.log(test);
-    })
-    .catch(error => {      
-      console.log(token);
-      console.error('There was a problem with your fetch operation:', error);
-    });
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        return response.json();
+      })
+      .then(data => {
+        setTest(data);
+        getWeeklyProgress(data);
+      })
+      .catch(error => {
+        console.error('There was a problem with your fetch operation:', error);
+      });
   }
+
+  const getWeeklyProgress = (data) => {
+    if (data.userCalendar && data.userCalendar.length > 1) {
+      let allGoal = 0;
+      let completedGoal = 0;
+      for (const iterator of data.userCalendar) {
+        const currentDate = new Date();
+        const nowDate = moment(currentDate).format('DD MMM');
+        const exerDate = moment(iterator.calendarDate, "DD MMM").format('DD MMM');
+        if (nowDate == exerDate) {
+          allGoal += 1;
+          if (iterator.completed) {
+            completedGoal += 1;
+          }
+        }
+      }
+      setProgress((completedGoal / allGoal * 100).toFixed(0));
+    }
+  }
+
+  
   useEffect(() => {
     updateDate();
-    // checkAwards()
   }, []);
   
   const onRefresh = () => {
@@ -303,7 +285,7 @@ export default function Profile({route}) {
               justifyContent: 'center',
             }}>
               <ProgressBar 
-              progress={progress} 
+              progress={progress/100} 
               color={'#E0FE10'} 
               fillStyle={{borderRadius: 20}}
               style={{
@@ -312,7 +294,7 @@ export default function Profile({route}) {
                 borderRadius: 10, 
                 width: Dimensions.get('window').width - 50
               }}/>
-              <Text style={progress<=0.5?{fontFamily:'Regular',fontSize:12, position: 'absolute', color:'white'}:{fontFamily:'Regular',fontSize:12, position: 'absolute', color:'#17181B'}}>{progress*100}%</Text>
+              <Text style={progress/100<=0.5?{fontFamily:'Regular',fontSize:12, position: 'absolute', color:'white'}:{fontFamily:'Regular',fontSize:12, position: 'absolute', color:'#17181B'}}>{progress}%</Text>
             </View>
           </View>
  

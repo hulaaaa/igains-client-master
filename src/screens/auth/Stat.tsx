@@ -119,8 +119,11 @@ export default function Stat() {
             day: '2-digit',
             year: 'numeric'
           };
+          const startOfWeek = moment().startOf('week');
           const formattedDateString = new Intl.DateTimeFormat('en-US', options).format(oneWeekAgo);
-          return  moment(item.trainingDate, "ddd MMM DD HH:mm:ss zzz YYYY").format('ddd MMM DD YYYY') >= formattedDateString;
+          return data.filter(item => {
+            return moment(item.trainingDate, "ddd MMM DD HH:mm:ss zzz YYYY").isSameOrAfter(startOfWeek);
+          });
         });
       case 'Monthly':
         const oneMonthAgo = new Date(currentDate.getTime() - 30 * 24 * 60 * 60 * 1000);

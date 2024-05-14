@@ -123,9 +123,17 @@ export default function Profile({route}) {
           }
         }
       }
-      setProgress((completedGoal / allGoal * 100).toFixed(0));
+      const weeklyProgress = completedGoal / allGoal * 100;
+      if (weeklyProgress >= 0 && weeklyProgress <= 100) {
+        setProgress(weeklyProgress.toFixed(0));
+      } else {
+        setProgress(0);
+      }
+    } else {
+      setProgress(0);
     }
   }
+  
 
   
   useEffect(() => {

@@ -46,8 +46,9 @@ export default function AddNewExercise({activeDay, selectedMonth}) {
       repassword: "",
     },
   });
-  const [allEx, setAllEx] = React.useState([]);
+  
   const [selectId, setSelectId] = React.useState(0);
+  const [allEx, setAllEx] = React.useState([]);
   const getAllExercises = async () => {
     try {
       const url = `http://192.168.0.214:8090/exercise/getall`;

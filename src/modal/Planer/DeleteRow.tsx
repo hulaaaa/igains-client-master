@@ -27,7 +27,7 @@ export default function DeleteRow() {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        'calendarId': openedRow.item.id,
+        'calendarId': openedRow.id,
         'email': email,
       })})
       .then(response => {

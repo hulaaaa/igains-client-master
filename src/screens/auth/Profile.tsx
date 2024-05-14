@@ -42,47 +42,11 @@ export default function Profile({route}) {
   if (!fontsLoaded && !fontError) {
     return null;
   }
-  
-  
-  let awards_user = [ 
-    {
-      name: 'First Sweat',
-      description: 'You completed 5 exercises!',
-      img: <ShinyStartIcon/>,
-    },
-    { 
-      name: 'Initial Time',
-      description: 'You reached First Hour',
-      img: <SniperIcon/>,
-    },
-    {
-      name: 'Punctuality',
-      description: 'You completed first Goal!',
-      img: <GhostIcon/>,
-    },
-    {
-      name: 'In love on Training',
-      description: 'You added 10 favorites!',
-      img: (
-        <Svg xmlns="http://www.w3.org/2000/svg" width={30} height={28} fill="none">
-          <Path
-            fill="#E03326"
-            d="M2.722 2.428A8.787 8.787 0 0 0 2.573 15L15 27.427 27.427 15A8.787 8.787 0 0 0 15 2.573a8.787 8.787 0 0 0-12.278-.145Z"
-          />
-        </Svg>
-      ),
-    }
-  ]
 
   const [test,setTest] = useState({})
-  const [one,setOne] = useState(false)
-  const [two,setTwo] = useState(false)
-  const [three,setThree] = useState(false)
-  const [four,setFour] = useState(false)
-
   const [progress,setProgress] = useState(0)
 
-  async function updateDate() {
+  async function updateData() {
     const token = await AsyncStorage.getItem('token');
     const email = await AsyncStorage.getItem('email');
     const url = `http://192.168.0.214:8090/api/users/get/${email}`;
@@ -109,7 +73,7 @@ export default function Profile({route}) {
   }
 
   const getWeeklyProgress = (data) => {
-    if (data.userCalendar && data.userCalendar.length > 1) {
+    if (data.userCalendar && data.userCalendar.length > 0) {
       let allGoal = 0;
       let completedGoal = 0;
       for (const iterator of data.userCalendar) {
@@ -134,16 +98,49 @@ export default function Profile({route}) {
     }
   }
   
-
+  
+  let awards_user = [ 
+    {
+      name: 'First Sweat',
+      description: 'You completed 5 exercises!',
+      img: <ShinyStartIcon/>,
+      achieved: test.latestTrainings && test.latestTrainings.length >= 5
+    },
+    { 
+      name: 'Initial Time',
+      description: 'You reached First Hour',
+      img: <SniperIcon/>,
+      achieved: test.totalMinutes && test.totalMinutes >= 60
+    },
+    {
+      name: 'Punctuality',
+      description: 'You completed first Goal!',
+      img: <GhostIcon/>,
+      achieved: test.userCalendar && test.userCalendar.some(item => item.completed)
+    },
+    {
+      name: 'In love on Training',
+      description: 'You added 10 favorites!',
+      img: (
+        <Svg xmlns="http://www.w3.org/2000/svg" width={30} height={28} fill="none">
+          <Path
+            fill="#E03326"
+            d="M2.722 2.428A8.787 8.787 0 0 0 2.573 15L15 27.427 27.427 15A8.787 8.787 0 0 0 15 2.573a8.787 8.787 0 0 0-12.278-.145Z"
+          />
+        </Svg>
+      ),
+      achieved: test.favorites && test.favorites.length >= 10
+    }
+  ]
   
   useEffect(() => {
-    updateDate();
+    updateData();
   }, []);
   
   const onRefresh = () => {
     setRefreshing(true);
     setTimeout(() => {
-      updateDate()
+      updateData();
       setRefreshing(false);
     }, 800);
   };
@@ -185,14 +182,14 @@ export default function Profile({route}) {
                 fontSize: 20,
                 color: 'white'
               }}>
-                {test.userName}
+                  {test && test.userName}
               </Text>
               <Text style={{
                 fontFamily: 'Light',
                 fontSize: 12,
                 color: 'rgba(255, 255, 255, 0.5)',
               }}>
-                {test.email}
+                 {test && test.email}
               </Text>
             </View>
           </View>
@@ -307,51 +304,26 @@ export default function Profile({route}) {
           </View>
  
           <View style={styles.divtasks}>
-            <Text style={{alignSelf: 'flex-start', fontFamily:'Regular', color: 'white', fontSize: 20}}>
+            <Text style={{ alignSelf: 'flex-start', fontFamily: 'Regular', color: 'white', fontSize: 20 }}>
               My Awards
             </Text>
-            <ScrollView horizontal={true} showsHorizontalScrollIndicator={false}  style={{
+            <ScrollView horizontal={true} showsHorizontalScrollIndicator={false} style={{
               width: '100%',
               display: 'flex',
               flexDirection: 'row'
             }}>
-            {awards_user.filter(item => {
-              switch (item.name) {
-                case 'First Sweat':
-                  return true
-                  // return test.latestTrainings && test.latestTrainings.length >= 5;
-                case 'Initial Time':
-                  return true
-                case 'Punctuality':
-                  return true
-                case 'In love on Training':
-                  return true
-                default:
-                  return false;
-              }
-            }).map((item, index) => (
-              <View key={index} style={{backgroundColor: '#17181B', marginRight: 10,flexDirection: 'column', alignItems: 'center',gap: 9, borderRadius: 10, width: 107, padding: 12,}}>
-                {item.img}
-                <Text style={{fontFamily: 'Regular', color: 'white', fontSize: 16}}>{item.name}</Text>
-                <Text style={{fontFamily: 'Regular',textAlign:'center', color: 'rgba(255,255,255,0.5)', fontSize: 12}}>{item.description}</Text>
-              </View>
-            ))}
-            {awards_user.filter(item => {
-              switch (item.name) {
-                case 'First Sweat':
-                case 'Initial Time':
-                case 'Punctuality':
-                case 'In love on Training':
-                  return true;
-                default:
-                  return false;
-              }
-            }).length === 0 && (
-              <View key={index} style={{backgroundColor: '#17181B', marginRight: 10,flexDirection: 'column', alignItems: 'center',gap: 9, borderRadius: 10, width: 107, padding: 12,}}>
-              </View>
-            )}
+              {awards_user && awards_user.length > 0 && awards_user.map((item, index) => (
+                <View key={index} style={{ backgroundColor: item.achieved ? '#17181B' : '#A11010', marginRight: 10, flexDirection: 'column', alignItems: 'center', gap: 9, borderRadius: 10, width: 107, padding: 12, }}>
+                  {item.img}
+                  <Text style={{ fontFamily: 'Regular', color: 'white', fontSize: 16 }}>{item.name}</Text>
+                  <Text style={{ fontFamily: 'Regular', textAlign: 'center', color: 'rgba(255,255,255,0.5)', fontSize: 12 }}>{item.description}</Text>
+                  {!item.achieved && <Text style={{ fontFamily: 'Regular', color: 'white', fontSize: 12 }}>Not achieved yet</Text>}
+                </View>
+              ))}
             </ScrollView>
+
           </View>
+
 
  
           <View style={styles.divtasks}>

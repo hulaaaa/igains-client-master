@@ -223,10 +223,10 @@ export default function LoginLayout({route}) {
               gap: 20,
               marginBottom: 30,
             }}>
-              <TouchableOpacity>
+              <TouchableOpacity disabled={true} style={{opacity:0.4}}>
                 <GoogleAuthSvg />
               </TouchableOpacity>
-              <TouchableOpacity>
+              <TouchableOpacity disabled={true} style={{opacity:0.4}}>
                 <FbAuthSvg />
               </TouchableOpacity>
             </View>
